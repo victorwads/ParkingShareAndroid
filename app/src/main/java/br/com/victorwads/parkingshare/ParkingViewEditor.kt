@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -96,7 +97,9 @@ private fun ParkingSpot(
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDragStart = { onDrag()},
-                    onDragEnd = { onDragEnd(square.position) },
+                    onDragEnd = {
+                        onDragEnd(square.position)
+                    },
                 ) { _, dragAmount ->
                     if (dragAmount != Offset(0f, 0f)) {
                         offset += (dragAmount / density)
@@ -126,4 +129,39 @@ fun Offset.limitOut(
         this.x.coerceIn((maxX * (-1) + margin) * zoom, (minX * (-1) + margin) * zoom),
         this.y.coerceIn((maxY * (-1) + margin) * zoom, (minY * (-1) + margin) * zoom)
     )
+}
+
+@Preview
+@Composable
+fun PreviewParkingSpotSelected() {
+    ParkingSpot(
+        square = ParkingSpace(),
+        selected = true,
+        zoom = 1f,
+        boxOffset = Offset(0f, 0f),
+        onDrag = {},
+        onDragEnd = {}
+    )
+}
+@Preview
+@Composable
+fun PreviewParkingSpot() {
+    ParkingSpot(
+        square = ParkingSpace(),
+        selected = false,
+        zoom = 1f,
+        boxOffset = Offset(0f, 0f),
+        onDrag = {},
+        onDragEnd = {}
+    )
+}
+
+@Preview
+@Composable
+fun PreviewDragAndDropSquares() {
+    val viewModel: ParkingEditViewModel = viewModel()
+    viewModel.addParkingSpot()
+    viewModel.addParkingSpot()
+    viewModel.addParkingSpot()
+    DragAndDropSquares(viewModel = viewModel)
 }
