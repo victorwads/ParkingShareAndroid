@@ -1,4 +1,4 @@
-package br.com.victorwads.parkingshare.ui.theme
+package br.com.victorwads.parkingshare.presentation.theme
 
 import android.app.Activity
 import android.os.Build

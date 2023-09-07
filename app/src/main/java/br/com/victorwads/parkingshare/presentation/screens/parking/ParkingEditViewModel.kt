@@ -1,8 +1,9 @@
-package br.com.victorwads.parkingshare
+package br.com.victorwads.parkingshare.presentation.screens.parking
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
+import br.com.victorwads.parkingshare.domain.model.ParkingSpace
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,13 +17,11 @@ class ParkingEditViewModel : ViewModel() {
     val selectedSpot: StateFlow<ParkingSpace?> = _selectedSpot.asStateFlow()
 
     fun addParkingSpot() {
-       _selectedSpot.value?.let {
-           _parkingSpots.add(
-               ParkingSpace(
-               position = it.position + Offset(it.size.width, 0f)
-           )
-           )
-       } ?: _parkingSpots.add(ParkingSpace())
+        _selectedSpot.value?.let {
+            _parkingSpots.add(
+                ParkingSpace(position = it.position + Offset(it.size.width, 0f))
+            )
+        } ?: _parkingSpots.add(ParkingSpace())
         setSelectedSpot(_parkingSpots.last().id)
     }
 

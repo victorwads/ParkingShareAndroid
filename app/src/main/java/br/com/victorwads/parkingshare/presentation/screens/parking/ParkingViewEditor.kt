@@ -1,4 +1,4 @@
-package br.com.victorwads.parkingshare
+package br.com.victorwads.parkingshare.presentation.screens.parking
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -30,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import br.com.victorwads.parkingshare.domain.model.ParkingSpace
 
 @Composable
 fun DragAndDropSquares(
@@ -43,7 +44,8 @@ fun DragAndDropSquares(
 
     Box(
         modifier = Modifier
-            .fillMaxSize().clipToBounds()
+            .fillMaxSize()
+            .clipToBounds()
             .border(1.dp, Color.Red)
             .onSizeChanged { size = it }
             .pointerInput(squares) {
@@ -86,7 +88,8 @@ private fun ParkingSpot(
 ) {
     var offset by remember { mutableStateOf(square.position) }
     Box(
-        modifier = Modifier.offset(
+        modifier = Modifier
+            .offset(
                 x = (offset.x * zoom + boxOffset.x).dp,
                 y = (offset.y * zoom + boxOffset.y).dp
             )
@@ -96,7 +99,7 @@ private fun ParkingSpot(
             .background(Color.Transparent)
             .pointerInput(Unit) {
                 detectDragGestures(
-                    onDragStart = { onDrag()},
+                    onDragStart = { onDrag() },
                     onDragEnd = {
                         onDragEnd(square.position)
                     },
@@ -143,6 +146,7 @@ fun PreviewParkingSpotSelected() {
         onDragEnd = {}
     )
 }
+
 @Preview
 @Composable
 fun PreviewParkingSpot() {

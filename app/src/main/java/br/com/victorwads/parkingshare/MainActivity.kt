@@ -9,46 +9,79 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import br.com.victorwads.parkingshare.ui.theme.ParkingShareTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import br.com.victorwads.parkingshare.presentation.screens.Screens
+import br.com.victorwads.parkingshare.presentation.screens.login.LoginScreenWithGoogle
+import br.com.victorwads.parkingshare.presentation.screens.parking.DragAndDropSquares
+import br.com.victorwads.parkingshare.presentation.screens.parking.ParkingEditViewModel
+import br.com.victorwads.parkingshare.presentation.theme.ParkingShareTheme
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : ComponentActivity() {
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val viewModel: ParkingEditViewModel = viewModel()
-        
+            val navController = rememberNavController()
             ParkingShareTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize()
+                    NavHost(
+                        navController = navController,
+                        startDestination = Screens.Login.route
                     ) {
-                        Button(onClick = { viewModel.addParkingSpot() }) {
-                            Text("Add")
-                        }
-                        DragAndDropSquares(
-                            viewModel = viewModel
-                        )
+                        loginGraph(navController)
+                        mvp(navController)
                     }
+
                 }
             }
         }
     }
-}
 
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ParkingShareTheme {
-        DragAndDropSquares()
+    private fun NavGraphBuilder.loginGraph(navController: NavController) {
+        composable(Screens.Login.route) {
+            LoginScreenWithGoogle {
+                navController.navigate(Screens.Home.route) {
+                    popUpTo(Screens.Login.route) { inclusive = true }
+                }
+            }
+        }
     }
+
+    private fun NavGraphBuilder.mvp(navController: NavController) {
+        composable(Screens.Home.route) {
+            Column {
+                Button(
+                    onClick = { navController.navigate(Screens.ParkingEditor.route) }
+                ) { Text("Editor") }
+                Button(
+                    onClick = {
+                        FirebaseAuth.getInstance().signOut()
+                        navController.navigate(Screens.Login.route)
+                    }
+                ) { Text("LogOut") }
+            }
+        }
+
+        composable(Screens.ParkingEditor.route) {
+            val viewModel: ParkingEditViewModel = viewModel()
+            Column(modifier = Modifier.fillMaxSize()) {
+                Button(onClick = { viewModel.addParkingSpot() }) {
+                    Text("Add")
+                }
+                DragAndDropSquares(viewModel = viewModel)
+            }
+        }
+    }
+
 }

@@ -1,4 +1,4 @@
-package br.com.victorwads.parkingshare.ui.theme
+package br.com.victorwads.parkingshare.presentation.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
