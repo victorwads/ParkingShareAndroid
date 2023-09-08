@@ -15,18 +15,12 @@ class ParkingSpotsRepository(
 ) {
     private val db = FirebaseFirestore.getInstance()
 
-    fun addAllSpotsToFirebase(floor: String, spots: List<PlaceSpot>) = db.batch().let { batch ->
-        spots.forEachIndexed { i, spot ->
-            batch.set(
-                getFloorsRef(floor).document(i.toString()), spot
-            )
-        }
-
-        batch.commit()
-    }
-
     fun updateSpot(floor: String, spot: PlaceSpot) {
         getFloorsRef(floor).document(spot.id).set(spot)
+    }
+
+    fun deleteSpot(floor: String, square: PlaceSpot) {
+        getFloorsRef(floor).document(square.id).delete()
     }
 
     suspend fun getAllSpots(floor: String): Map<String, PlaceSpot> = suspendCoroutine { cont ->

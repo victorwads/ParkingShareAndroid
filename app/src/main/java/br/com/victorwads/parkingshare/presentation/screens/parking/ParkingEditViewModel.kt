@@ -44,12 +44,17 @@ class ParkingEditViewModel : ViewModel() {
         parkingSpotsRepository.updateSpot(tempFloor, spot)
     }
 
-    private fun loadParkingSpots() {
+    fun loadParkingSpots() {
         viewModelScope.launch {
             parkingSpotsRepository.getAllSpots(tempFloor).let {
                 parkingSpots.clear()
                 parkingSpots.putAll(it)
             }
         }
+    }
+
+    fun deleteSpot(square: PlaceSpot) {
+        parkingSpotsRepository.deleteSpot(tempFloor, square)
+        parkingSpots.remove(square.id)
     }
 }

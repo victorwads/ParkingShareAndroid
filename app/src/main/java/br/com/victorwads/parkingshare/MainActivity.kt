@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -79,8 +80,13 @@ class MainActivity : ComponentActivity() {
         composable(Screens.ParkingEditor.route) {
             val viewModel: ParkingEditViewModel = viewModel()
             Column(modifier = Modifier.fillMaxSize()) {
-                Button(onClick = { viewModel.addParkingSpot() }) {
-                    Text("Add")
+                Row {
+                    Button(onClick = { viewModel.addParkingSpot() }) {
+                        Text("Add")
+                    }
+                    Button(onClick = { viewModel.loadParkingSpots() }) {
+                        Text("Reload")
+                    }
                 }
                 DragAndDropSquares(viewModel = viewModel)
             }

@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -56,7 +57,7 @@ fun DragAndDropSquares(
                     else if (zoomState < 0.1f) zoomState = 0.1f
 
                     offset = (offset * zoom + (pan / density))
-                        .limitOut(squares, zoomState, size.width, size.height)
+                        .limitOut(squares, zoomState, size.width.toFloat(), size.height.toFloat())
                 }
             }
     ) {
@@ -98,14 +99,16 @@ private fun ParkingSpot(
             .size(square.size.width.dp, square.size.height.dp)
             .border(2.dp, if (selected) Color.Blue else Color.Yellow)
             .background(Color.Transparent)
-            .pointerInput(Unit) {
-                detectDragGestures(
+            .pointerInput(selected) {
+                detectDragGesturesAfterLongPress(
                     onDragStart = { onDrag() },
-                    onDragEnd = { onDragEnd(square) },
+                    onDragEnd = {
+                        square.position = offset
+                        onDragEnd(square)
+                    },
                 ) { _, dragAmount ->
                     if (dragAmount != Offset(0f, 0f)) {
                         offset = offset.plus((dragAmount / density))
-                        square.position = offset
                     }
                 }
             }
