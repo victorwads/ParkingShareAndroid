@@ -15,8 +15,8 @@ android {
         applicationId = "br.com.victorwads.parkingshare"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 4
+        versionName = "08092023.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -24,13 +24,30 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getenv("CPS_KEYSTORE_PATH"))
+            keyAlias = System.getenv("CPS_KEY_ALIAS")
+
+            val keyPasswordEnv = System.getenv("CPS_KEY_PASSWORD")
+            storePassword = keyPasswordEnv
+            keyPassword = keyPasswordEnv
+        }
+    }
+
     buildTypes {
-        release {
+        debug {
             isMinifyEnabled = false
+            applicationIdSuffix = ".debug"
+        }
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
