@@ -3,7 +3,6 @@ package br.com.victorwads.parkingshare.presentation.screens.parking
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
@@ -28,7 +27,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import br.com.victorwads.parkingshare.data.models.PlaceSpot
@@ -39,9 +37,9 @@ fun DragAndDropSquares(
 ) {
     val squares = viewModel.parkingSpots
     val selectedSpot by remember { viewModel.selectedSpot }
-    var offset by remember { mutableStateOf(Offset(0f, 0f)) }
-    var zoomState by remember { mutableFloatStateOf(1f) }
-    var size by remember { mutableStateOf(IntSize(0, 0)) }
+    var zoomState by remember { viewModel.zoom }
+    var offset by remember { viewModel.offset }
+    var size by remember { viewModel.size }
 
     Box(
         modifier = Modifier
@@ -123,28 +121,30 @@ private fun ParkingSpot(
     }
 }
 
+
 fun Offset.limitOut(
     squaresMap: Map<String, PlaceSpot>,
     zoom: Float,
     marginHorizontal: Float,
     marginVertical: Float
 ): Offset {
-    val squares = squaresMap.map { it.value }
-    val minX = squares.minOfOrNull { it.position.x } ?: 0f
-    val maxX = squares.maxOfOrNull { it.position.x } ?: 0f
-    val minY = squares.minOfOrNull { it.position.y } ?: 0f
-    val maxY = squares.maxOfOrNull { it.position.y } ?: 0f
+//    val squares = squaresMap.map { it.value }
+//    val minX = squares.minX
+//    val maxX = squares.maxOfOrNull { it.position.x } ?: 0f
+//    val minY = squares.minY
+//    val maxY = squares.maxOfOrNull { it.position.y } ?: 0f
 
-    return Offset(
-        this.x.coerceIn(
-            (maxX * (-1) + marginHorizontal) * zoom,
-            (minX * (-1) + marginHorizontal) * zoom
-        ),
-        this.y.coerceIn(
-            (maxY * (-1) + marginVertical) * zoom,
-            (minY * (-1) + marginVertical) * zoom
-        )
-    )
+    return this
+//    Offset(
+//        this.x.coerceIn(
+//            (maxX * (-1) + marginHorizontal) * zoom,
+//            (minX * (-1) + marginHorizontal) * zoom
+//        ),
+//        this.y.coerceIn(
+//            (maxY * (-1) + marginVertical) * zoom,
+//            (minY * (-1) + marginVertical) * zoom
+//        )
+//    )
 }
 
 @Preview
