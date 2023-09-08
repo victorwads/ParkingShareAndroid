@@ -4,7 +4,10 @@ import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.PropertyName
 
 data class UserCar(
-    @DocumentId val id: String? = null,
-    @PropertyName("model") val model: String? = null,
-    @PropertyName("licensePlate") val licensePlate: String = ""
+    @JvmField @DocumentId
+    var id: String? = null,
+    @JvmField @PropertyName("model")
+    var model: String? = null,
+    @JvmField @PropertyName("licensePlate")
+    var licensePlate: String = ""
 )

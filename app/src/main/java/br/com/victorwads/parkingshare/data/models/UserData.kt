@@ -2,24 +2,32 @@ package br.com.victorwads.parkingshare.data.models
 
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.PropertyName
-
 data class UserData(
-    @DocumentId val id: String = "",
-    @PropertyName("name") val username: String = "",
-    @PropertyName("profilePicture") val profilePicture: String? = null,
-
-    @PropertyName("acceptTerms") val acceptTerms: Boolean = false,
-    @PropertyName("deviceInfo") val deviceInfo: DeviceInfo? = null,
-    @PropertyName(FieldNotificationTokens) val notificationTokens: List<String> = listOf(),
+    @JvmField @DocumentId
+    var id: String = "",
+    @JvmField @PropertyName("profileName")
+    var username: String = "",
+    @JvmField @PropertyName("profileImage")
+    var profilePicture: String? = null,
+    @JvmField @PropertyName("acceptTerms")
+    var acceptTerms: Boolean = false,
+    @JvmField @PropertyName("info")
+    var deviceInfo: DeviceInfo? = null,
+    @JvmField @PropertyName(Fields.NotificationTokens)
+    var notificationTokens: List<String> = listOf(),
 ) {
     data class DeviceInfo(
-        @PropertyName("device") val device: String = "",
-        @PropertyName("version") val version: String = "",
-        @PropertyName("versionCode") val versionCode: String = "",
-        @PropertyName("osVersion") val osVersion: String = "",
+        @JvmField @PropertyName("deviceModel")
+        var device: String = "",
+        @JvmField @PropertyName("appVersion")
+        var version: String = "",
+        @JvmField @PropertyName("appVersionCode")
+        var versionCode: String = "",
+        @JvmField @PropertyName("deviceOs")
+        var osVersion: String = "",
     )
 
-    companion object {
-        const val FieldNotificationTokens = "notificationTokens"
+    object Fields {
+        const val NotificationTokens = "notificationTokens"
     }
 }

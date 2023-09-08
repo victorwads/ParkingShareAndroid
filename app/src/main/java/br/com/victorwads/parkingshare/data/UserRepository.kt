@@ -4,7 +4,7 @@ import android.content.pm.PackageInfo
 import android.os.Build
 import br.com.victorwads.parkingshare.data.firebase.Collections
 import br.com.victorwads.parkingshare.data.models.UserData
-import br.com.victorwads.parkingshare.data.models.UserData.Companion.FieldNotificationTokens
+import br.com.victorwads.parkingshare.data.models.UserData.Fields
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -24,31 +24,24 @@ class UserRepository {
         val uid = auth.currentUser?.uid ?: return
         db.collection(Collections.Users)
             .document(uid)
-            .update(FieldNotificationTokens, FieldValue.arrayUnion(token))
+            .update(Fields.NotificationTokens, FieldValue.arrayUnion(token))
     }
 
     fun createUserIfNotExists(pInfo: PackageInfo) {
         val uid = auth.currentUser?.uid ?: return
         val userRef = db.collection(Collections.Users).document(uid)
-        userRef.get().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val document = task.result
-                if (!document.exists()) {
-                    val user = UserData(
-                        id = uid,
-                        username = auth.currentUser?.displayName ?: "No Name",
-                        profilePicture = auth.currentUser?.photoUrl?.toString(),
-                        deviceInfo = UserData.DeviceInfo(
-                            device = "${Build.MANUFACTURER} ${Build.MODEL}",
-                            version = pInfo.versionName,
-                            versionCode = pInfo.versionCode.toString(),
-                            osVersion = Build.VERSION.RELEASE
-                        ),
-                    )
-                    userRef.set(user)
-                }
-            }
-        }
+        val user = UserData(
+            id = uid,
+            username = auth.currentUser?.displayName ?: "No Name",
+            profilePicture = auth.currentUser?.photoUrl?.toString(),
+            deviceInfo = UserData.DeviceInfo(
+                device = "${Build.MANUFACTURER} ${Build.MODEL}",
+                version = pInfo.versionName,
+                versionCode = pInfo.versionCode.toString(),
+                osVersion = Build.VERSION.RELEASE
+            ),
+        )
+        userRef.set(user)
     }
 
     companion object {

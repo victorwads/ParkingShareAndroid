@@ -7,15 +7,22 @@ import com.google.firebase.firestore.ServerTimestamp
 import java.util.Date
 
 data class PlaceSpotRequest(
-    @DocumentId val id: String? = null,
-    @PropertyName("spotId") val spotId: String = "",
-    @PropertyName("user") val userId: String = "",
-    @PropertyName("neededTime") val neededTime: NeededTime = NeededTime(),
+    @JvmField @DocumentId
+    var id: String? = null,
+    @JvmField @PropertyName("spotId")
+    var spotId: String = "",
+    @JvmField @PropertyName("user")
+    var userId: String = "",
+    @JvmField @PropertyName("neededTime")
+    var neededTime: NeededTime = NeededTime(),
     @ServerTimestamp
-    @PropertyName("publishTime") val publishTime: Timestamp = Timestamp(Date(0)),
+    @JvmField @PropertyName("publishTime")
+    var publishTime: Timestamp = Timestamp(Date(0)),
 ){
     data class NeededTime(
-        @PropertyName("start") val startTime: Timestamp = Timestamp(Date(0)),
-        @PropertyName("end") val endTime: Timestamp = Timestamp(Date(0))
+        @JvmField @PropertyName("start")
+        var startTime: Timestamp = Timestamp(Date(0)),
+        @JvmField @PropertyName("end")
+        var endTime: Timestamp = Timestamp(Date(0))
     )
 }
