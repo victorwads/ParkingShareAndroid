@@ -1,0 +1,15 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "br.com.victorwads.parkingshare",
+      "sha256_cert_fingerprints":
+      [
+        "7D:9F:FB:24:8D:65:95:A4:EF:EC:E2:F6:0C:7C:9E:87:84:2F:5B:76:1C:BF:A3:1C:4F:A6:B4:24:4F:10:02:51",
+        "E7:92:24:73:42:0C:A6:D4:17:7A:80:0C:B2:EB:0C:87:3E:A6:D9:CA:86:80:80:CA:D1:3D:EC:AA:16:FC:24:1E",
+        "A5:DF:94:5A:AB:45:0F:82:F5:02:17:27:E1:5C:A9:9D:69:B1:19:A2:7C:91:3F:27:66:DB:0A:AC:20:91:43:97"
+      ]
+    }
+  }
+]

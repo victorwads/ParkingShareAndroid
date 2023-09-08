@@ -19,6 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import br.com.victorwads.parkingshare.R
+import br.com.victorwads.parkingshare.data.UserRepository
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -51,9 +52,11 @@ fun LoginScreenWithGoogle(onSuccess: () -> Unit) {
             Toast.makeText(context, "Google Sign-In failed!", Toast.LENGTH_SHORT).show()
         }
     }
-    LaunchedEffect(Unit){
+    LaunchedEffect(Unit) {
         val user = FirebaseAuth.getInstance().currentUser
-        if(user != null) onSuccess()
+        if (user != null) {
+            onSuccess()
+        }
     }
     LoginScreen {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)

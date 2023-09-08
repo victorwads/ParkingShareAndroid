@@ -16,6 +16,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import br.com.victorwads.parkingshare.data.UserRepository
 import br.com.victorwads.parkingshare.presentation.screens.Screens
 import br.com.victorwads.parkingshare.presentation.screens.login.LoginScreenWithGoogle
 import br.com.victorwads.parkingshare.presentation.screens.parking.DragAndDropSquares
@@ -54,6 +55,8 @@ class MainActivity : ComponentActivity() {
                 navController.navigate(Screens.Home.route) {
                     popUpTo(Screens.Login.route) { inclusive = true }
                 }
+                UserRepository.shared
+                    .createUserIfNotExists(packageManager.getPackageInfo(packageName, 0))
             }
         }
     }

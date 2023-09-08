@@ -1,44 +1,55 @@
 package br.com.victorwads.parkingshare.presentation.screens.parking
 
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
-import br.com.victorwads.parkingshare.domain.model.ParkingSpace
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import androidx.lifecycle.viewModelScope
+import br.com.victorwads.parkingshare.data.ParkingSpotsRepository
+import br.com.victorwads.parkingshare.data.models.PlaceSpot
+import kotlinx.coroutines.launch
 
 class ParkingEditViewModel : ViewModel() {
 
-    private val _parkingSpots = mutableStateListOf<ParkingSpace>()
-    private val _selectedSpot = MutableStateFlow<ParkingSpace?>(null)
+    private val parkingSpotsRepository = ParkingSpotsRepository()
+    private val tempFloor = "T"
 
-    val parkingSpots: List<ParkingSpace> = _parkingSpots
-    val selectedSpot: StateFlow<ParkingSpace?> = _selectedSpot.asStateFlow()
+    val parkingSpots = mutableStateMapOf<String, PlaceSpot>()
+    val selectedSpot = mutableStateOf<PlaceSpot?>(null)
+
+    init {
+        loadParkingSpots()
+    }
 
     fun addParkingSpot() {
-        _selectedSpot.value?.let {
-            _parkingSpots.add(
-                ParkingSpace(position = it.position + Offset(it.size.width, 0f))
+        val newName = parkingSpots.size.toString()
+        val newSpot = selectedSpot.value?.let {
+            PlaceSpot(
+                id = newName,
+                floor = tempFloor,
+                position = it.position + Offset(it.size.width, 0f)
             )
-        } ?: _parkingSpots.add(ParkingSpace())
-        setSelectedSpot(_parkingSpots.last().id)
+        } ?: PlaceSpot(newName)
+
+        parkingSpots[newName] = newSpot
+        selectedSpot.value = newSpot
+        saveSpotChanges(newSpot)
     }
 
-    fun setSelectedSpot(id: String) {
-        _selectedSpot.value = _parkingSpots.find { it.id == id }
+    fun selectSpot(spot: PlaceSpot) {
+        selectedSpot.value = spot
     }
 
-    fun unselectSpot() {
-        _selectedSpot.value = null
+    fun saveSpotChanges(spot: PlaceSpot) {
+        parkingSpotsRepository.updateSpot(tempFloor, spot)
     }
 
-    fun saveSpotChanges(spot: ParkingSpace, offset: Offset) {
-        spot.position = offset
-        _parkingSpots[_parkingSpots.indexOfFirst { it.id == spot.id }] = spot
-    }
-
-    fun deleteSpot(spot: ParkingSpace) {
-        _parkingSpots.removeIf { it.id == spot.id }
+    private fun loadParkingSpots() {
+        viewModelScope.launch {
+            parkingSpotsRepository.getAllSpots(tempFloor).let {
+                parkingSpots.clear()
+                parkingSpots.putAll(it)
+            }
+        }
     }
 }

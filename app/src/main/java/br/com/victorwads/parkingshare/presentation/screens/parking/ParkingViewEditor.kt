@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,14 +30,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import br.com.victorwads.parkingshare.domain.model.ParkingSpace
+import br.com.victorwads.parkingshare.data.models.PlaceSpot
 
 @Composable
 fun DragAndDropSquares(
     viewModel: ParkingEditViewModel = viewModel()
 ) {
-    var squares = viewModel.parkingSpots
-    val selectedSpot by viewModel.selectedSpot.collectAsState()
+    val squares = viewModel.parkingSpots
+    val selectedSpot by remember { viewModel.selectedSpot }
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
     var zoomState by remember { mutableFloatStateOf(1f) }
     var size by remember { mutableStateOf(IntSize(0, 0)) }
@@ -56,7 +56,7 @@ fun DragAndDropSquares(
                     else if (zoomState < 0.1f) zoomState = 0.1f
 
                     offset = (offset * zoom + (pan / density))
-                        .limitOut(squares, zoomState, 50f)
+                        .limitOut(squares, zoomState, size.width, size.height)
                 }
             }
     ) {
@@ -65,26 +65,27 @@ fun DragAndDropSquares(
             Text(text = "offset: $offset")
             Text(text = "size: $size")
         }
-        squares.forEach { square ->
-            ParkingSpot(
-                square = square,
-                selected = square.id == selectedSpot?.id,
-                zoom = zoomState, boxOffset = offset,
-                onDrag = { viewModel.setSelectedSpot(square.id) },
-                onDragEnd = { offset -> viewModel.saveSpotChanges(square, offset) }
-            )
+        squares.forEach { (id, square) ->
+            key(id) {
+                ParkingSpot(
+                    square = square,
+                    selected = id == selectedSpot?.id,
+                    zoom = zoomState, boxOffset = offset,
+                    onDrag = { viewModel.selectSpot(square) }
+                ) { newSquare -> viewModel.saveSpotChanges(newSquare) }
+            }
         }
     }
 }
 
 @Composable
 private fun ParkingSpot(
-    square: ParkingSpace,
+    square: PlaceSpot,
     selected: Boolean,
     zoom: Float, boxOffset: Offset,
     density: Float = LocalDensity.current.density,
     onDrag: () -> Unit,
-    onDragEnd: (Offset) -> Unit
+    onDragEnd: (PlaceSpot) -> Unit
 ) {
     var offset by remember { mutableStateOf(square.position) }
     Box(
@@ -100,37 +101,46 @@ private fun ParkingSpot(
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDragStart = { onDrag() },
-                    onDragEnd = {
-                        onDragEnd(square.position)
-                    },
+                    onDragEnd = { onDragEnd(square) },
                 ) { _, dragAmount ->
                     if (dragAmount != Offset(0f, 0f)) {
-                        offset += (dragAmount / density)
+                        offset = offset.plus((dragAmount / density))
                         square.position = offset
                     }
                 }
             }
     ) {
         Column {
-            Text(text = "x: ${square.position.x.toInt()}")
-            Text(text = "y: ${square.position.y.toInt()}")
+            Text(text = "id: ${square.id}")
+            Text(text = "ox: ${offset.x.toInt()}")
+            Text(text = "oy: ${offset.y.toInt()}")
+            Text(text = "sx: ${square.position.x.toInt()}")
+            Text(text = "sy: ${square.position.y.toInt()}")
         }
     }
 }
 
 fun Offset.limitOut(
-    squares: List<ParkingSpace>,
+    squaresMap: Map<String, PlaceSpot>,
     zoom: Float,
-    margin: Float
+    marginHorizontal: Float,
+    marginVertical: Float
 ): Offset {
+    val squares = squaresMap.map { it.value }
     val minX = squares.minOfOrNull { it.position.x } ?: 0f
     val maxX = squares.maxOfOrNull { it.position.x } ?: 0f
     val minY = squares.minOfOrNull { it.position.y } ?: 0f
     val maxY = squares.maxOfOrNull { it.position.y } ?: 0f
 
     return Offset(
-        this.x.coerceIn((maxX * (-1) + margin) * zoom, (minX * (-1) + margin) * zoom),
-        this.y.coerceIn((maxY * (-1) + margin) * zoom, (minY * (-1) + margin) * zoom)
+        this.x.coerceIn(
+            (maxX * (-1) + marginHorizontal) * zoom,
+            (minX * (-1) + marginHorizontal) * zoom
+        ),
+        this.y.coerceIn(
+            (maxY * (-1) + marginVertical) * zoom,
+            (minY * (-1) + marginVertical) * zoom
+        )
     )
 }
 
@@ -138,26 +148,24 @@ fun Offset.limitOut(
 @Composable
 fun PreviewParkingSpotSelected() {
     ParkingSpot(
-        square = ParkingSpace(),
+        square = PlaceSpot("1"),
         selected = true,
         zoom = 1f,
         boxOffset = Offset(0f, 0f),
-        onDrag = {},
-        onDragEnd = {}
-    )
+        onDrag = {}
+    ) {}
 }
 
 @Preview
 @Composable
 fun PreviewParkingSpot() {
     ParkingSpot(
-        square = ParkingSpace(),
+        square = PlaceSpot("1"),
         selected = false,
         zoom = 1f,
         boxOffset = Offset(0f, 0f),
-        onDrag = {},
-        onDragEnd = {}
-    )
+        onDrag = {}
+    ) {}
 }
 
 @Preview
