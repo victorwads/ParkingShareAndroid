@@ -23,7 +23,10 @@ import br.com.victorwads.parkingshare.presentation.screens.login.LoginScreenWith
 import br.com.victorwads.parkingshare.presentation.screens.parking.DragAndDropSquares
 import br.com.victorwads.parkingshare.presentation.screens.parking.ParkingEditViewModel
 import br.com.victorwads.parkingshare.presentation.theme.ParkingShareTheme
+import com.google.android.gms.auth.GoogleAuthUtil
+import com.google.android.gms.auth.api.identity.Identity
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 
 class MainActivity : ComponentActivity() {
 
@@ -71,6 +74,7 @@ class MainActivity : ComponentActivity() {
                 Button(
                     onClick = {
                         FirebaseAuth.getInstance().signOut()
+                        Identity.getSignInClient(this@MainActivity).signOut()
                         navController.navigate(Screens.Login.route)
                     }
                 ) { Text("LogOut") }
