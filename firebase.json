@@ -4,6 +4,7 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
+    "site": "estaciona",
     "public": "public",
     "ignore": [
       "firebase.json",

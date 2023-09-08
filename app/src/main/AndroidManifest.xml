@@ -29,6 +29,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data android:host="community-parking-share.web.app"/>
+                <data android:host="estaciona.web.app"/>
                 <data android:pathPrefix="/"/>
                 <data android:scheme="https" />
             </intent-filter>
