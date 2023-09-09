@@ -142,15 +142,26 @@ private fun ParkingSpot(
                     }
                 }
             },
-        contentAlignment = Alignment.BottomCenter
+        contentAlignment = square.size.let {
+            if (it.width > it.height) Alignment.CenterEnd
+            else Alignment.BottomCenter
+        }
     ) {
         TextWithBorder(
+            modifier = Modifier
+                .offset(
+                    x = if (square.size.width > square.size.height) (-15).dp else 0.dp,
+                    y = if (square.size.width > square.size.height) 0.dp else (-15).dp
+                ),
             boxColor = if (selected) Color.White else darkYellow,
             text = square.id
         )
         if (BuildConfig.DEBUG) {
             Box(
-                contentAlignment = Alignment.TopCenter,
+                contentAlignment = square.size.let {
+                    if (it.width > it.height) Alignment.CenterStart
+                    else Alignment.TopCenter
+                },
                 modifier = Modifier
                     .fillMaxSize()
             ) {
@@ -167,6 +178,7 @@ private fun ParkingSpot(
 
 @Composable
 fun TextWithBorder(
+    modifier: Modifier = Modifier,
     boxColor: Color,
     text: String,
     size: Float = 38f,
@@ -191,9 +203,8 @@ fun TextWithBorder(
     val widthSize = size / density * 0.6
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier
+        modifier = modifier
             .size(40.dp, 30.dp)
-            .offset(y = (-15).dp)
             .background(boxColor, CircleShape)
     ) {
         Canvas(

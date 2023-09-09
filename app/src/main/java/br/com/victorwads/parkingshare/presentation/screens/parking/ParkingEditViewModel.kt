@@ -73,9 +73,10 @@ class ParkingEditViewModel : ViewModel() {
 
     fun rotateSpot() {
         selectedSpot.value?.let {
-            it.size = it.size.copy(it.size.height, it.size.width)
+            it.size = it.size.copy(width = it.size.height, height = it.size.width)
             parkingSpots[it.id] = it
             saveSpotChanges(it)
+            animateToSpot(it, zoom = zoom.floatValue)
         }
     }
 
@@ -148,6 +149,10 @@ class ParkingEditViewModel : ViewModel() {
         ((parkingSpots.area.width.value - size.value.width) / 2f) - this.x,
         ((parkingSpots.area.height.value - size.value.height) / 2f) - this.y
     )
+
+    fun center() {
+        animateToSpot(selectedSpot.value ?: parkingSpots.boxSpot, zoom = zoom.floatValue)
+    }
 }
 
 val Map<String, PlaceSpot>.minX
