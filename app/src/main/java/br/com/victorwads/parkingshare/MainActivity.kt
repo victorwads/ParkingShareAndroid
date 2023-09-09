@@ -7,12 +7,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import br.com.victorwads.parkingshare.data.UserRepository
+import br.com.victorwads.parkingshare.di.ViewModelsFactory
 import br.com.victorwads.parkingshare.presentation.screens.Screens
 import br.com.victorwads.parkingshare.presentation.screens.home.HomeScreen
 import br.com.victorwads.parkingshare.presentation.screens.login.LoginScreenWithGoogle
@@ -62,7 +64,9 @@ class MainActivity : ComponentActivity() {
         }
 
         composable(Screens.ParkingEditor.route) {
-            ParkingViewEditor()
+            ParkingViewEditor(
+                viewModel(factory = ViewModelsFactory())
+            )
         }
     }
 

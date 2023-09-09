@@ -10,7 +10,6 @@ import br.com.victorwads.parkingshare.data.models.PlaceSpot
 import br.com.victorwads.parkingshare.presentation.screens.parking.ParkingEditViewModel
 
 class PreviewViewModelsFactory : ViewModelProvider.Factory {
-
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         when {
             modelClass.isAssignableFrom(ParkingEditViewModel::class.java) -> {
@@ -37,6 +36,22 @@ class PreviewViewModelsFactory : ViewModelProvider.Factory {
             }
 
             else -> throw IllegalArgumentException("Classe ViewModel desconhecida")
+        }
+    }
+
+    companion object {
+        fun createMediumParkingStop(viewModel: ParkingEditViewModel) = with(viewModel) {
+            addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot();
+            addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot();
+            addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot();
+            addParkingSpot(PlaceSpot.Alignment.BOTTOM, 12, from = viewModel.parkingSpots["0"])
+            addParkingSpot(PlaceSpot.Alignment.RIGHT);
+            addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot();
+            addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot();
+            addParkingSpot(); addParkingSpot();
+            unselectSpot()
+            zoom.floatValue = 0.5f
+            center()
         }
     }
 }

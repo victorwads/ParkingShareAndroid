@@ -1,21 +1,12 @@
 package br.com.victorwads.parkingshare.presentation.screens.parking
 
-import androidx.compose.foundation.layout.Arrangement
+import android.content.res.Configuration
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -25,97 +16,51 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
-import br.com.victorwads.parkingshare.data.models.PlaceSpot
-import br.com.victorwads.parkingshare.di.ViewModelsFactory
+import br.com.victorwads.parkingshare.R
+import br.com.victorwads.parkingshare.di.PreviewViewModelsFactory
+import br.com.victorwads.parkingshare.di.PreviewViewModelsFactory.Companion.createMediumParkingStop
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ParkingViewEditor() {
+fun ParkingViewEditor(
+    viewModel: ParkingEditViewModel
+) {
+    val context = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
-    val viewModel: ParkingEditViewModel = viewModel(factory = ViewModelsFactory())
     var longPress by remember { mutableStateOf(true) }
     Column(modifier = Modifier.fillMaxSize()) {
-        FlowRow(
-            modifier = Modifier.padding(8.dp),
-            horizontalArrangement = Arrangement.Absolute.SpaceBetween
-        ) {
-            var newItemsJump by remember { viewModel.newItemsJump }
-            TextField(
-                modifier = Modifier
-                    .padding(start = 8.dp, end = 8.dp)
-                    .size(50.dp, Dp.Unspecified),
-                value = newItemsJump.toString(),
-                onValueChange = { newItemsJump = it.toIntOrNull() ?: 1 },
-                singleLine = true,
-                textStyle = TextStyle(textAlign = TextAlign.Center),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                keyboardActions = KeyboardActions(onDone = { showDialog = false })
-            )
-            Button(onClick = { viewModel.addParkingSpot() }) {
-                Text("Add")
-            }
-            Button(onClick = { viewModel.loadParkingSpots() }) {
-                Text("Reload")
-            }
-            Button(onClick = { showDialog = true }) {
-                Text("Find")
-            }
-            Button(onClick = { viewModel.center() }) {
-                Text("Center")
-            }
-            Spacer(modifier = Modifier.weight(1f))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Switch(checked = longPress, onCheckedChange = { longPress = it })
-                Text("LongPress", modifier = Modifier.padding(start = 8.dp, end = 8.dp))
-
-                var expanded by remember { mutableStateOf(false) }
-                var selectedOption by remember { viewModel.newItemsAlignment }
-                Button(onClick = { expanded = !expanded }) {
-                    Text("NewAlignment:")
-                    Text(selectedOption.name)
-                }
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    PlaceSpot.Alignment.values().forEach { value ->
-                        DropdownMenuItem(
-                            text = { Text(value.name) },
-                            onClick = {
-                                selectedOption = value
-                                expanded = false
-                            }
-                        )
-                    }
-                }
-            }
-            if (viewModel.selectedSpot.value != null) {
-                Spacer(modifier = Modifier.weight(1f))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Button(onClick = { viewModel.rotateSpot() }) {
-                        Text("Rotate")
-                    }
-                    Button(onClick = { viewModel.deleteSpot() }) {
-                        Text("Delete")
-                    }
-                    Button(onClick = { viewModel.unselectSpot() }) {
-                        Text("Unselect")
-                    }
-                }
-            }
-        }
+        ParkingViewEditorTools(
+            viewModel = viewModel,
+            showDialog = { showDialog = true },
+            changeLongPress = { longPress = it }
+        )
         ParkingView(viewModel = viewModel, longPress = longPress)
     }
     LaunchedEffect(true) {
         viewModel.loadParkingSpots()
+        viewModel.errors.observeForever {
+            val message = when (it) {
+                ParkingViewEditorErrors.InvalidSpotFloor -> TODO()
+                ParkingViewEditorErrors.InvalidSpotId -> TODO()
+                ParkingViewEditorErrors.InvalidSpotJump -> TODO()
+                ParkingViewEditorErrors.InvalidSpotName -> TODO()
+                ParkingViewEditorErrors.InvalidSpotPrice -> TODO()
+                ParkingViewEditorErrors.InvalidSpotStatus -> TODO()
+                is ParkingViewEditorErrors.SpotAlreadyExists ->
+                    context.getString(R.string.error_spot_exists, it.spot.id)
+
+                null -> null
+            }
+            message?.let { msg ->
+                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            }
+        }
     }
     if (showDialog) {
         var textInput by remember { mutableStateOf("") }
@@ -128,17 +73,22 @@ fun ParkingViewEditor() {
                         value = textInput,
                         onValueChange = { textInput = it },
                         singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                        keyboardActions = KeyboardActions(onDone = { showDialog = false })
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Search, autoCorrect = false
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onSearch = {
+                                showDialog = false
+                                viewModel.findSpot(textInput)
+                            }
+                        )
                     )
-                    Text("caso a vaga não existir ela será criada")
+                    Text("caso a vaga não existir, ela será criada")
                 }
             },
             confirmButton = {
-                TextButton(onClick = {
-                    showDialog = false
-                    viewModel.findSpot(textInput)
-                }) {
+                TextButton(onClick = { showDialog = false; viewModel.findSpot(textInput); }) {
                     Text("Confirmar")
                 }
             },
@@ -149,4 +99,22 @@ fun ParkingViewEditor() {
             }
         )
     }
+}
+
+@Preview(device = Devices.PIXEL_4, showSystemUi = true)
+@Preview(device = Devices.TABLET, showSystemUi = true)
+@Composable
+fun ParkingViewEditorPreview() {
+    val viewModel = viewModel<ParkingEditViewModel>(factory = PreviewViewModelsFactory())
+    ParkingViewEditor(viewModel = viewModel)
+    LaunchedEffect(Unit) { createMediumParkingStop(viewModel) }
+}
+
+@Preview(device = Devices.PIXEL_4, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(device = Devices.TABLET, showSystemUi = true)
+@Composable
+fun ParkingViewEditorPreviewNight() {
+    val viewModel = viewModel<ParkingEditViewModel>(factory = PreviewViewModelsFactory())
+    ParkingViewEditor(viewModel = viewModel)
+    LaunchedEffect(Unit) { createMediumParkingStop(viewModel) }
 }

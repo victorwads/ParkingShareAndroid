@@ -101,15 +101,20 @@ fun ParkingView(
                     .zIndex(0f)
                     .background(Color(0x11000000))
             )
-            squares.forEach { (id, square) ->
+            squares.forEach { (id, spot) ->
                 key(id) {
                     ParkingSpot(
-                        square = square,
+                        spot = spot,
                         selected = id == selectedSpot?.id,
-                        longPress = longPress,
-                        onAdd = { viewModel.addParkingSpot(align = it) },
-                        onDragStart = { viewModel.selectSpot(square) }
-                    ) { newSquare, position -> viewModel.saveSpotChanges(newSquare, position) }
+                        useLongPress = longPress,
+                        events = ParkingViewEvents(
+                            onDragStart = { viewModel.selectSpot(it) },
+                            onDragEnd = { it, position ->
+                                viewModel.saveSpotChanges(it, position)
+                            },
+                            onAdd = { viewModel.addParkingSpot(align = it, from = spot) }
+                        )
+                    )
                 }
             }
         }

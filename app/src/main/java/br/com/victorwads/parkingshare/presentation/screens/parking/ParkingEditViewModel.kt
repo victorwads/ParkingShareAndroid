@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -33,6 +34,7 @@ class ParkingEditViewModel(
 
     private val tempFloor = "T"
 
+    val errors = MutableLiveData<ParkingViewEditorErrors?>()
     val newItemsAlignment = mutableStateOf(PlaceSpot.Alignment.RIGHT)
     val newItemsJump = mutableIntStateOf(1)
 
@@ -63,10 +65,10 @@ class ParkingEditViewModel(
         } ?: addParkingSpot(name = term)
     }
 
-    fun addParkingSpot(align: PlaceSpot.Alignment, jump: Int = 1, from: PlaceSpot? = null): PlaceSpot {
+    fun addParkingSpot(align: PlaceSpot.Alignment, jump: Int? = null, from: PlaceSpot? = null): PlaceSpot {
         from?.let { selectedSpot.value = it }
+        jump?.let { newItemsJump.intValue = it }
         newItemsAlignment.value = align
-        newItemsJump.value = jump
         return addParkingSpot()
     }
 
@@ -76,6 +78,10 @@ class ParkingEditViewModel(
             selectedSpot.copy(
                 id = name ?: selectedSpot.id.toIntOrNull()?.plus(newItemsJump.intValue)?.toString() ?: "0",
             ).alignWith(selectedSpot, newItemsAlignment.value)
+        }
+        parkingSpots[new.id]?.let {
+            errors.value = ParkingViewEditorErrors.SpotAlreadyExists(it)
+            return it
         }
         new.let {
             parkingSpots[it.id] = it.fixPosition(parkingSpots)

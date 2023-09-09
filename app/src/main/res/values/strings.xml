@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Parking Share</string>
+    <string name="add_top">Adicionar em Cima</string>
+    <string name="add_bottom">Adicionar em Baixo</string>
+    <string name="add_left">Adicionar a Esquerda</string>
+    <string name="add_right">Adicionar a Direita</string>
+    <string name="error_spot_exists">A posição %1$s já existe.</string>
 </resources>

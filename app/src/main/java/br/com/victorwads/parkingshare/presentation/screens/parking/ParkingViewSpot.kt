@@ -27,9 +27,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import br.com.victorwads.parkingshare.R
 import br.com.victorwads.parkingshare.data.models.PlaceSpot
 import br.com.victorwads.parkingshare.data.models.PlaceSpot.Position
 import br.com.victorwads.parkingshare.isDebug
@@ -37,30 +39,28 @@ import br.com.victorwads.parkingshare.presentation.components.TextWithBorder
 
 @Composable
 internal fun ParkingSpot(
-    square: PlaceSpot,
+    spot: PlaceSpot,
     selected: Boolean,
-    longPress: Boolean = false,
-    onAdd: (PlaceSpot.Alignment) -> Unit = {},
-    onDragStart: () -> Unit = {},
-    onDragEnd: (PlaceSpot, Position) -> Position = { _, _ -> Position(0f, 0f) }
+    useLongPress: Boolean = false,
+    events: ParkingViewEvents = ParkingViewEvents(),
 ) {
     val density: Float = LocalDensity.current.density
-    var offset by remember { mutableStateOf(square.position) }
+    var offset by remember { mutableStateOf(spot.position) }
     Box(
         modifier = Modifier
             .offset(
                 x = offset.x.dp,
                 y = offset.y.dp
             )
-            .size(square.size.width.dp, square.size.height.dp)
+            .size(spot.size.width.dp, spot.size.height.dp)
             .border(2.dp, if (selected) Color.Green else Color.Yellow)
             .zIndex(if (selected) 20f else 10f)
             .background(Color.Transparent)
-            .pointerInput(longPress) {
-                if (longPress) {
+            .pointerInput(useLongPress) {
+                if (useLongPress) {
                     detectDragGesturesAfterLongPress(
-                        onDragStart = { onDragStart() },
-                        onDragEnd = { offset = onDragEnd(square, offset) },
+                        onDragStart = { events.onDragStart(spot) },
+                        onDragEnd = { offset = events.onDragEnd(spot, offset) },
                     ) { _, dragAmount ->
                         if (dragAmount != Offset(0f, 0f)) {
                             offset = offset.plus((dragAmount / density))
@@ -68,8 +68,8 @@ internal fun ParkingSpot(
                     }
                 } else {
                     detectDragGestures(
-                        onDragStart = { onDragStart() },
-                        onDragEnd = { offset = onDragEnd(square, offset) }
+                        onDragStart = { events.onDragStart(spot) },
+                        onDragEnd = { offset = events.onDragEnd(spot, offset) }
                     ) { _, dragAmount ->
                         if (dragAmount != Offset(0f, 0f)) {
                             offset = offset.plus((dragAmount / density))
@@ -77,7 +77,7 @@ internal fun ParkingSpot(
                     }
                 }
             },
-        contentAlignment = square.size.let {
+        contentAlignment = spot.size.let {
             if (it.width > it.height) Alignment.CenterEnd
             else Alignment.BottomCenter
         }
@@ -85,15 +85,15 @@ internal fun ParkingSpot(
         TextWithBorder(
             modifier = Modifier
                 .offset(
-                    x = if (square.size.width > square.size.height) (-15).dp else 0.dp,
-                    y = if (square.size.width > square.size.height) 0.dp else (-15).dp
+                    x = if (spot.size.width > spot.size.height) (-15).dp else 0.dp,
+                    y = if (spot.size.width > spot.size.height) 0.dp else (-15).dp
                 ),
             boxColor = if (selected) Color.Green else Color.Yellow,
-            text = square.id
+            text = spot.id
         )
         if (isDebug) {
             Box(
-                contentAlignment = square.size.let {
+                contentAlignment = spot.size.let {
                     if (it.width > it.height) Alignment.CenterStart
                     else Alignment.TopCenter
                 },
@@ -103,53 +103,55 @@ internal fun ParkingSpot(
                 Column() {
                     Text(text = "ox: ${offset.x.toInt()}")
                     Text(text = "oy: ${offset.y.toInt()}")
-                    Text(text = "sx: ${square.position.x.toInt()}")
-                    Text(text = "sy: ${square.position.y.toInt()}")
+                    Text(text = "sx: ${spot.position.x.toInt()}")
+                    Text(text = "sy: ${spot.position.y.toInt()}")
                 }
             }
         }
         if (selected) {
             val dpOffset = 70.dp
-            val css = Modifier.background(Color.Gray.copy(alpha = 0.6f), CircleShape)
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .offset(x = -dpOffset), contentAlignment = Alignment.CenterStart
-            ) {
-                IconButton(modifier = css, onClick = { onAdd(PlaceSpot.Alignment.LEFT) }) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Adicionar a Esquerda")
-                }
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .offset(x = dpOffset), contentAlignment = Alignment.CenterEnd
-            ) {
-                IconButton(modifier = css, onClick = { onAdd(PlaceSpot.Alignment.RIGHT) }) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Adicionar a Direita")
-                }
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .offset(y = -dpOffset), contentAlignment = Alignment.TopCenter
-            ) {
-                IconButton(modifier = css, onClick = { onAdd(PlaceSpot.Alignment.TOP) }) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Adicionar em Cima")
-                }
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .offset(y = dpOffset), contentAlignment = Alignment.BottomCenter
-            ) {
-                IconButton(modifier = css, onClick = { onAdd(PlaceSpot.Alignment.BOTTOM) }) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Adicionar em Baixo")
-                }
-            }
+            AddButton(Modifier.offset(x = -dpOffset), PlaceSpot.Alignment.LEFT, events.onAdd)
+            AddButton(Modifier.offset(x = dpOffset), PlaceSpot.Alignment.RIGHT, events.onAdd)
+            AddButton(Modifier.offset(y = -dpOffset), PlaceSpot.Alignment.TOP, events.onAdd)
+            AddButton(Modifier.offset(y = dpOffset), PlaceSpot.Alignment.BOTTOM, events.onAdd)
         }
     }
 }
+
+@Composable
+private fun AddButton(
+    modifier: Modifier = Modifier,
+    alignment: PlaceSpot.Alignment,
+    onAdd: (PlaceSpot.Alignment) -> Unit
+) {
+    val composeAlignment = when (alignment) {
+        PlaceSpot.Alignment.TOP -> Alignment.TopCenter
+        PlaceSpot.Alignment.BOTTOM -> Alignment.BottomCenter
+        PlaceSpot.Alignment.LEFT -> Alignment.CenterStart
+        PlaceSpot.Alignment.RIGHT -> Alignment.CenterEnd
+    }
+    val description = when (alignment) {
+        PlaceSpot.Alignment.TOP -> R.string.add_top
+        PlaceSpot.Alignment.BOTTOM -> R.string.add_bottom
+        PlaceSpot.Alignment.LEFT -> R.string.add_left
+        PlaceSpot.Alignment.RIGHT -> R.string.add_right
+    }
+    Box(modifier = modifier.fillMaxSize(), contentAlignment = composeAlignment) {
+        IconButton(
+            modifier = Modifier.background(Color.Gray.copy(alpha = 0.6f), CircleShape),
+            onClick = { onAdd(alignment) }
+        ) {
+            Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(description))
+        }
+    }
+
+}
+
+class ParkingViewEvents(
+    val onDragStart: (PlaceSpot) -> Unit = {},
+    val onDragEnd: (PlaceSpot, Position) -> Position = { _, _ -> Position(0f, 0f) },
+    val onAdd: (PlaceSpot.Alignment) -> Unit = {}
+)
 
 @Preview(group = "ParkingSpot")
 @Composable
@@ -159,7 +161,7 @@ fun PreviewParkingSpotSelected() {
         contentAlignment = Alignment.Center
     ) {
         ParkingSpot(
-            square = PlaceSpot("1"),
+            spot = PlaceSpot("1"),
             selected = true,
         )
     }
@@ -173,7 +175,7 @@ fun PreviewParkingSpot() {
         contentAlignment = Alignment.Center
     ) {
         ParkingSpot(
-            square = PlaceSpot("1534"),
+            spot = PlaceSpot("1534"),
             selected = false,
         )
     }
