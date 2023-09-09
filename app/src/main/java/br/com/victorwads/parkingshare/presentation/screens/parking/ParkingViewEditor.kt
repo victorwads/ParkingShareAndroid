@@ -103,10 +103,10 @@ fun DragAndDropSquares(
 private fun ParkingSpot(
     square: PlaceSpot,
     selected: Boolean,
-    density: Float = LocalDensity.current.density,
     onDragStart: () -> Unit = {},
     onDragEnd: (PlaceSpot, Position) -> Position = { _, _ -> Position(0f, 0f) }
 ) {
+    val density: Float = LocalDensity.current.density
     var offset by remember { mutableStateOf(square.position) }
     Box(
         modifier = Modifier
@@ -117,7 +117,7 @@ private fun ParkingSpot(
             .size(square.size.width.dp, square.size.height.dp)
             .border(2.dp, if (selected) Color.White else darkYellow)
             .background(Color.Transparent)
-            .pointerInput(selected) {
+            .pointerInput(Unit) {
                 detectDragGesturesAfterLongPress(
                     onDragStart = { onDragStart() },
                     onDragEnd = {
