@@ -72,9 +72,7 @@ fun DragAndDropSquares(
                         zoomState = 1f
                         return@detectTransformGestures
                     }
-
-                    offset = (offset * zoom + (pan / density))
-                        .limitOut(squares, zoomState, size.width.toFloat(), size.height.toFloat())
+                    viewModel.updateOffset((offset * zoom + (pan / density)))
                 }
             }
     ) {
