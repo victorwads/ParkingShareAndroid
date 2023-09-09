@@ -101,14 +101,15 @@ data class PlaceSpot(
     }
 
     @Exclude
-    fun alignWith(square2: PlaceSpot, alignment: Alignment) {
-        if (square2.id == id) return
+    fun alignWith(square2: PlaceSpot, alignment: Alignment): PlaceSpot {
+        if (square2.id == id) return this
         position = when (alignment) {
             Alignment.LEFT -> Position(square2.left - size.width, square2.top)
             Alignment.RIGHT -> Position(square2.left + square2.size.width, square2.top)
             Alignment.TOP -> Position(square2.left, square2.top - size.height)
             Alignment.BOTTOM -> Position(square2.left, square2.top + square2.size.height)
         }
+        return this
     }
 
     enum class Alignment {

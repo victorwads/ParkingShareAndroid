@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
@@ -13,6 +14,10 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,24 +40,27 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
-import br.com.victorwads.parkingshare.BuildConfig
 import br.com.victorwads.parkingshare.data.models.PlaceSpot
 import br.com.victorwads.parkingshare.data.models.PlaceSpot.Position
 import br.com.victorwads.parkingshare.data.models.area
 import br.com.victorwads.parkingshare.data.models.minX
 import br.com.victorwads.parkingshare.data.models.minY
+import br.com.victorwads.parkingshare.data.models.shadowMargin
+import br.com.victorwads.parkingshare.isDebug
 
 val darkYellow = Color(0xFFDDBB00)
 
 @Composable
 fun DragAndDropSquares(
-    viewModel: ParkingEditViewModel = viewModel()
+    viewModel: ParkingEditViewModel = viewModel(),
+    longPress: Boolean
 ) {
     val squares = viewModel.parkingSpots
     val selectedSpot by remember { viewModel.selectedSpot }
     var zoomState by remember { viewModel.zoom }
-    var offset by remember { viewModel.offset }
+    val offset by remember { viewModel.offset }
     var size by remember { viewModel.size }
     val density = LocalDensity.current.density
 
@@ -60,7 +68,10 @@ fun DragAndDropSquares(
         modifier = Modifier
             .fillMaxSize()
             .clipToBounds()
-            .border(1.dp, Color.Red)
+            .let {
+                if (isDebug) it.border(1.dp, Color.Red)
+                else it
+            }
             .onSizeChanged {
                 size = IntSize(
                     (it.width.toFloat() / density).toInt(),
@@ -80,7 +91,7 @@ fun DragAndDropSquares(
                 }
             }
     ) {
-        if (BuildConfig.DEBUG)
+        if (isDebug)
             Column {
                 Text(text = "zoom: $zoomState")
                 Text(text = "offset: $offset")
@@ -95,22 +106,25 @@ fun DragAndDropSquares(
                 .offset(x = offset.x.dp, y = offset.y.dp)
                 .scale(zoomState)
         ) {
-            squares.forEach { (id, square) ->
-                key(id) {
-                    ParkingSpot(
-                        square = square,
-                        selected = id == selectedSpot?.id,
-                        onDragStart = { viewModel.selectSpot(square) }
-                    ) { newSquare, position -> viewModel.saveSpotChanges(newSquare, position) }
-                }
-            }
             Box(
                 modifier = Modifier
                     .requiredSize(squares.area)
                     .offset(x = squares.minX.dp - shadowMargin, y = squares.minY.dp - shadowMargin)
                     .border(1.dp, Color.Gray)
-                    .background(Color(0x33000000))
+                    .zIndex(0f)
+                    .background(Color(0x11000000))
             )
+            squares.forEach { (id, square) ->
+                key(id) {
+                    ParkingSpot(
+                        square = square,
+                        selected = id == selectedSpot?.id,
+                        longPress = longPress,
+                        onAdd = { viewModel.addParkingSpot(align = it) },
+                        onDragStart = { viewModel.selectSpot(square) }
+                    ) { newSquare, position -> viewModel.saveSpotChanges(newSquare, position) }
+                }
+            }
         }
     }
 }
@@ -119,6 +133,8 @@ fun DragAndDropSquares(
 private fun ParkingSpot(
     square: PlaceSpot,
     selected: Boolean,
+    longPress: Boolean = false,
+    onAdd: (PlaceSpot.Alignment) -> Unit = {},
     onDragStart: () -> Unit = {},
     onDragEnd: (PlaceSpot, Position) -> Position = { _, _ -> Position(0f, 0f) }
 ) {
@@ -131,17 +147,27 @@ private fun ParkingSpot(
                 y = offset.y.dp
             )
             .size(square.size.width.dp, square.size.height.dp)
-            .border(2.dp, if (selected) Color.White else darkYellow)
+            .border(2.dp, if (selected) Color.Green else Color.Yellow)
+            .zIndex(if (selected) 20f else 10f)
             .background(Color.Transparent)
-            .pointerInput(Unit) {
-                detectDragGesturesAfterLongPress(
-                    onDragStart = { onDragStart() },
-                    onDragEnd = {
-                        offset = onDragEnd(square, offset)
-                    },
-                ) { _, dragAmount ->
-                    if (dragAmount != Offset(0f, 0f)) {
-                        offset = offset.plus((dragAmount / density))
+            .pointerInput(longPress) {
+                if (longPress) {
+                    detectDragGesturesAfterLongPress(
+                        onDragStart = { onDragStart() },
+                        onDragEnd = { offset = onDragEnd(square, offset) },
+                    ) { _, dragAmount ->
+                        if (dragAmount != Offset(0f, 0f)) {
+                            offset = offset.plus((dragAmount / density))
+                        }
+                    }
+                } else {
+                    detectDragGestures(
+                        onDragStart = { onDragStart() },
+                        onDragEnd = { offset = onDragEnd(square, offset) }
+                    ) { _, dragAmount ->
+                        if (dragAmount != Offset(0f, 0f)) {
+                            offset = offset.plus((dragAmount / density))
+                        }
                     }
                 }
             },
@@ -156,10 +182,10 @@ private fun ParkingSpot(
                     x = if (square.size.width > square.size.height) (-15).dp else 0.dp,
                     y = if (square.size.width > square.size.height) 0.dp else (-15).dp
                 ),
-            boxColor = if (selected) Color.White else darkYellow,
+            boxColor = if (selected) Color.Green else Color.Yellow,
             text = square.id
         )
-        if (BuildConfig.DEBUG) {
+        if (isDebug) {
             Box(
                 contentAlignment = square.size.let {
                     if (it.width > it.height) Alignment.CenterStart
@@ -176,6 +202,46 @@ private fun ParkingSpot(
                 }
             }
         }
+        if (selected) {
+            val dpOffset = 70.dp
+            val css = Modifier.background(Color.Gray.copy(alpha = 0.6f), CircleShape)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .offset(x = -dpOffset), contentAlignment = Alignment.CenterStart
+            ) {
+                IconButton(modifier = css, onClick = { onAdd(PlaceSpot.Alignment.LEFT) }) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Adicionar a Esquerda")
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .offset(x = dpOffset), contentAlignment = Alignment.CenterEnd
+            ) {
+                IconButton(modifier = css, onClick = { onAdd(PlaceSpot.Alignment.RIGHT) }) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Adicionar a Direita")
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .offset(y = -dpOffset), contentAlignment = Alignment.TopCenter
+            ) {
+                IconButton(modifier = css, onClick = { onAdd(PlaceSpot.Alignment.TOP) }) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Adicionar em Cima")
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .offset(y = dpOffset), contentAlignment = Alignment.BottomCenter
+            ) {
+                IconButton(modifier = css, onClick = { onAdd(PlaceSpot.Alignment.BOTTOM) }) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Adicionar em Baixo")
+                }
+            }
+        }
     }
 }
 
@@ -184,20 +250,20 @@ fun TextWithBorder(
     modifier: Modifier = Modifier,
     boxColor: Color,
     text: String,
-    size: Float = 38f,
+    size: Float = 30f,
 ) {
     val textPaintStroke = Paint().asFrameworkPaint().apply {
         isAntiAlias = true
         style = android.graphics.Paint.Style.STROKE
         textSize = size
         color = android.graphics.Color.BLACK
-        strokeWidth = size * 0.25f
-        strokeMiter = size * 0.25f
+        strokeWidth = size * 0.1f
+        strokeMiter = size * 0.1f
         strokeJoin = android.graphics.Paint.Join.ROUND
     }
     val textPaint = Paint().asFrameworkPaint().apply {
         isAntiAlias = true
-        style = android.graphics.Paint.Style.FILL
+        style = android.graphics.Paint.Style.FILL_AND_STROKE
         textSize = size
         color = android.graphics.Color.WHITE
     }
@@ -235,7 +301,7 @@ fun PreviewParkingSpotSelected() {
 @Composable
 fun PreviewParkingSpot() {
     ParkingSpot(
-        square = PlaceSpot("15"),
+        square = PlaceSpot("1534"),
         selected = false,
     )
 }
@@ -247,5 +313,5 @@ fun PreviewDragAndDropSquares() {
     viewModel.addParkingSpot(save = false)
     viewModel.addParkingSpot(save = false)
     viewModel.addParkingSpot(save = false)
-    DragAndDropSquares(viewModel = viewModel)
+    DragAndDropSquares(viewModel = viewModel, longPress = false)
 }

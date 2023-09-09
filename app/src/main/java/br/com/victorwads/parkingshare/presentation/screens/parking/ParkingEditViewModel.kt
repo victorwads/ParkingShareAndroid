@@ -1,17 +1,19 @@
 package br.com.victorwads.parkingshare.presentation.screens.parking
 
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.victorwads.parkingshare.data.ParkingSpotsRepository
 import br.com.victorwads.parkingshare.data.models.PlaceSpot
 import br.com.victorwads.parkingshare.data.models.area
 import br.com.victorwads.parkingshare.data.models.boxSpot
+import br.com.victorwads.parkingshare.data.models.fixPosition
+import br.com.victorwads.parkingshare.data.models.lastId
 import br.com.victorwads.parkingshare.data.models.maxX
 import br.com.victorwads.parkingshare.data.models.maxY
 import br.com.victorwads.parkingshare.data.models.minX
@@ -23,6 +25,9 @@ class ParkingEditViewModel : ViewModel() {
 
     private val parkingSpotsRepository = ParkingSpotsRepository()
     private val tempFloor = "T"
+
+    val newItemsAlignment = mutableStateOf(PlaceSpot.Alignment.RIGHT)
+    val newItemsJump = mutableIntStateOf(1)
 
     val parkingSpots = mutableStateMapOf<String, PlaceSpot>()
     val selectedSpot = mutableStateOf<PlaceSpot?>(null)
@@ -40,36 +45,36 @@ class ParkingEditViewModel : ViewModel() {
         }
     }
 
-    fun findSpot(id: String) {
-        parkingSpots[id]?.let {
+    fun findSpot(term: String) {
+        val searched = parkingSpots[term]
+            ?: parkingSpots.values.find { it.id.lowercase().startsWith(term.lowercase()) }
+            ?: parkingSpots.values.find { it.id.lowercase().endsWith(term.lowercase()) }
+            ?: parkingSpots.values.find { it.id.lowercase().contains(term.lowercase()) }
+        searched?.let {
             selectedSpot.value = it
             animateToSpot(it)
-        } ?: addParkingSpot(name = id)
+        } ?: addParkingSpot(name = term)
     }
 
-    fun addParkingSpot(name: String? = null, save: Boolean = true) {
-        val newName = name ?: parkingSpots.size.toString()
-        val newSpot = selectedSpot.value?.let {
-            PlaceSpot(
-                id = newName,
-                floor = tempFloor,
-                position = it.position + Offset(it.size.width, 0f)
-            )
-        } ?: PlaceSpot(newName)
-        parkingSpots[newName] = newSpot
-        selectedSpot.value = newSpot
-        if (save) saveSpotChanges(newSpot)
-        animateToSpot(newSpot)
+    fun addParkingSpot(name: String? = null, save: Boolean = true, align: PlaceSpot.Alignment? = null): PlaceSpot {
+        align?.let { newItemsAlignment.value = it }
+        val new = (selectedSpot.value ?: parkingSpots.lastId).let { selectedSpot ->
+            selectedSpot.copy(
+                id = name ?: selectedSpot.id.toIntOrNull()?.plus(newItemsJump.intValue)?.toString() ?: "0",
+            ).alignWith(selectedSpot, newItemsAlignment.value)
+        }
+        new.let {
+            parkingSpots[it.id] = it.fixPosition(parkingSpots)
+            selectedSpot.value = it
+            animateToSpot(it)
+            if (save) saveSpotChanges(it)
+        }
+        return new
     }
 
     fun saveSpotChanges(spot: PlaceSpot, position: PlaceSpot.Position): PlaceSpot.Position {
         spot.position = position
-        var hitSpot = spot.isInside(parkingSpots.values.toList())
-        while (hitSpot != null) {
-            spot.fixPosition(hitSpot)
-            hitSpot = spot.isInside(parkingSpots.values.toList())
-        }
-
+        spot.fixPosition(parkingSpots)
         saveSpotChanges(spot)
         return spot.position
     }
@@ -86,6 +91,7 @@ class ParkingEditViewModel : ViewModel() {
         selectedSpot.value?.let {
             it.size = it.size.copy(width = it.size.height, height = it.size.width)
             parkingSpots[it.id] = it
+            it.fixPosition(parkingSpots)
             saveSpotChanges(it)
             animateToSpot(it, zoom = zoom.floatValue)
         }
@@ -95,6 +101,9 @@ class ParkingEditViewModel : ViewModel() {
         square ?: return
         parkingSpotsRepository.deleteSpot(tempFloor, square)
         parkingSpots.remove(square.id)
+        selectedSpot.value = parkingSpots.keys
+            .map { it.toIntOrNull() ?: 0 }.sorted()
+            .lastOrNull()?.let { parkingSpots[it.toString()] }
     }
 
     fun updateOffset(offset: Offset) {
@@ -165,5 +174,3 @@ class ParkingEditViewModel : ViewModel() {
         animateToSpot(selectedSpot.value ?: parkingSpots.boxSpot, zoom = zoom.floatValue)
     }
 }
-
-val shadowMargin = 100.dp

@@ -15,8 +15,8 @@ android {
         applicationId = "br.com.victorwads.parkingshare"
         minSdk = 26
         targetSdk = 34
-        versionCode = 4
-        versionName = "08092023.2"
+        versionCode = 5
+        versionName = "09092023.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

@@ -2,7 +2,6 @@ package br.com.victorwads.parkingshare.data.models
 
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import br.com.victorwads.parkingshare.presentation.screens.parking.shadowMargin
 
 val Map<String, PlaceSpot>.minX
     get() = this.minOfOrNull { it.value.position.x } ?: 0f
@@ -24,3 +23,18 @@ val Map<String, PlaceSpot>.area
         (maxX - minX).dp + (shadowMargin * 2),
         (maxY - minY).dp + (shadowMargin * 2)
     )
+
+val Map<String, PlaceSpot>.lastId
+    get() = this.maxOfOrNull { it.value.id }.let { this[it] ?: PlaceSpot() }
+
+fun PlaceSpot.fixPosition(spots: Map<String, PlaceSpot>): PlaceSpot {
+    var hitSpot = isInside(spots.values.toList())
+    var i = 0
+    while (hitSpot != null && i++ < spots.size) {
+        fixPosition(hitSpot)
+        hitSpot = isInside(spots.values.toList())
+    }
+    return this
+}
+
+val shadowMargin = 200.dp
