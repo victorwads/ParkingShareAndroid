@@ -4,13 +4,18 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.victorwads.parkingshare.data.ParkingSpotsRepository
 import br.com.victorwads.parkingshare.data.models.PlaceSpot
+import br.com.victorwads.parkingshare.data.models.area
+import br.com.victorwads.parkingshare.data.models.boxSpot
+import br.com.victorwads.parkingshare.data.models.maxX
+import br.com.victorwads.parkingshare.data.models.maxY
+import br.com.victorwads.parkingshare.data.models.minX
+import br.com.victorwads.parkingshare.data.models.minY
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -59,6 +64,12 @@ class ParkingEditViewModel : ViewModel() {
 
     fun saveSpotChanges(spot: PlaceSpot, position: PlaceSpot.Position): PlaceSpot.Position {
         spot.position = position
+        var hitSpot = spot.isInside(parkingSpots.values.toList())
+        while (hitSpot != null) {
+            spot.fixPosition(hitSpot)
+            hitSpot = spot.isInside(parkingSpots.values.toList())
+        }
+
         saveSpotChanges(spot)
         return spot.position
     }
@@ -155,24 +166,4 @@ class ParkingEditViewModel : ViewModel() {
     }
 }
 
-val Map<String, PlaceSpot>.minX
-    get() = this.minOfOrNull { it.value.position.x } ?: 0f
-val Map<String, PlaceSpot>.minY
-    get() = this.minOfOrNull { it.value.position.y } ?: 0f
-val Map<String, PlaceSpot>.maxX
-    get() = this.maxOfOrNull { it.value.position.x + it.value.size.width } ?: 0f
-val Map<String, PlaceSpot>.maxY
-    get() = this.maxOfOrNull { it.value.position.y + it.value.size.height } ?: 0f
-val Map<String, PlaceSpot>.centerX
-    get() = (minX + maxX) / 2
-val Map<String, PlaceSpot>.centerY
-    get() = (minY + maxY) / 2
-val Map<String, PlaceSpot>.boxSpot
-    get() = PlaceSpot(position = PlaceSpot.Position(centerX, centerY))
-
 val shadowMargin = 100.dp
-val Map<String, PlaceSpot>.area
-    get() = DpSize(
-        (maxX - minX).dp + (shadowMargin * 2),
-        (maxY - minY).dp + (shadowMargin * 2)
-    )

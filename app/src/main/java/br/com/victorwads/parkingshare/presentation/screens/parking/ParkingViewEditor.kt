@@ -39,6 +39,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import br.com.victorwads.parkingshare.BuildConfig
 import br.com.victorwads.parkingshare.data.models.PlaceSpot
 import br.com.victorwads.parkingshare.data.models.PlaceSpot.Position
+import br.com.victorwads.parkingshare.data.models.area
+import br.com.victorwads.parkingshare.data.models.minX
+import br.com.victorwads.parkingshare.data.models.minY
 
 val darkYellow = Color(0xFFDDBB00)
 
