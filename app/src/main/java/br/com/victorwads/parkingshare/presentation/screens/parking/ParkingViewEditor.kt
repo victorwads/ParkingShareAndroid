@@ -1,317 +1,152 @@
 package br.com.victorwads.parkingshare.presentation.screens.parking
 
-import android.util.Log
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
-import androidx.compose.foundation.gestures.detectTransformGestures
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import br.com.victorwads.parkingshare.data.models.PlaceSpot
-import br.com.victorwads.parkingshare.data.models.PlaceSpot.Position
-import br.com.victorwads.parkingshare.data.models.area
-import br.com.victorwads.parkingshare.data.models.minX
-import br.com.victorwads.parkingshare.data.models.minY
-import br.com.victorwads.parkingshare.data.models.shadowMargin
-import br.com.victorwads.parkingshare.isDebug
+import br.com.victorwads.parkingshare.di.ViewModelsFactory
 
-val darkYellow = Color(0xFFDDBB00)
-
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun DragAndDropSquares(
-    viewModel: ParkingEditViewModel = viewModel(),
-    longPress: Boolean
-) {
-    val squares = viewModel.parkingSpots
-    val selectedSpot by remember { viewModel.selectedSpot }
-    var zoomState by remember { viewModel.zoom }
-    val offset by remember { viewModel.offset }
-    var size by remember { viewModel.size }
-    val density = LocalDensity.current.density
+fun ParkingViewEditor() {
+    var showDialog by remember { mutableStateOf(false) }
+    val viewModel: ParkingEditViewModel = viewModel(factory = ViewModelsFactory())
+    var longPress by remember { mutableStateOf(true) }
+    Column(modifier = Modifier.fillMaxSize()) {
+        FlowRow(
+            modifier = Modifier.padding(8.dp),
+            horizontalArrangement = Arrangement.Absolute.SpaceBetween
+        ) {
+            var newItemsJump by remember { viewModel.newItemsJump }
+            TextField(
+                modifier = Modifier
+                    .padding(start = 8.dp, end = 8.dp)
+                    .size(50.dp, Dp.Unspecified),
+                value = newItemsJump.toString(),
+                onValueChange = { newItemsJump = it.toIntOrNull() ?: 1 },
+                singleLine = true,
+                textStyle = TextStyle(textAlign = TextAlign.Center),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                keyboardActions = KeyboardActions(onDone = { showDialog = false })
+            )
+            Button(onClick = { viewModel.addParkingSpot() }) {
+                Text("Add")
+            }
+            Button(onClick = { viewModel.loadParkingSpots() }) {
+                Text("Reload")
+            }
+            Button(onClick = { showDialog = true }) {
+                Text("Find")
+            }
+            Button(onClick = { viewModel.center() }) {
+                Text("Center")
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Switch(checked = longPress, onCheckedChange = { longPress = it })
+                Text("LongPress", modifier = Modifier.padding(start = 8.dp, end = 8.dp))
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .clipToBounds()
-            .let {
-                if (isDebug) it.border(1.dp, Color.Red)
-                else it
-            }
-            .onSizeChanged {
-                size = IntSize(
-                    (it.width.toFloat() / density).toInt(),
-                    (it.height.toFloat() / density).toInt()
-                )
-            }
-            .pointerInput(squares) {
-                detectTransformGestures { _, pan, zoom, rotation ->
-                    Log.i("Gesture", "X: ${pan.x}, Y: ${pan.y}, Zoom: $zoom, Rotation: $rotation")
-                    zoomState *= zoom
-                    if (zoomState < 0.1f) zoomState = 0.1f
-                    else if (zoomState > 1f) {
-                        zoomState = 1f
-                        return@detectTransformGestures
+                var expanded by remember { mutableStateOf(false) }
+                var selectedOption by remember { viewModel.newItemsAlignment }
+                Button(onClick = { expanded = !expanded }) {
+                    Text("NewAlignment:")
+                    Text(selectedOption.name)
+                }
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    PlaceSpot.Alignment.values().forEach { value ->
+                        DropdownMenuItem(
+                            text = { Text(value.name) },
+                            onClick = {
+                                selectedOption = value
+                                expanded = false
+                            }
+                        )
                     }
-                    viewModel.updateOffset((offset * zoom + (pan / density)))
                 }
             }
-    ) {
-        if (isDebug)
-            Column {
-                Text(text = "zoom: $zoomState")
-                Text(text = "offset: $offset")
-                Text(text = "boxSize: $size")
-                Text(text = "squareArea: ${squares.area}")
-                Text("PonX: ${((squares.area.width.value - size.width) / 2f) + (size.width / 2f) - offset.x}")
-                Text("PonY: ${((squares.area.height.value - size.height) / 2f) + (size.height / 2f) - offset.y}")
-            }
-        Box(
-            modifier = Modifier
-                .requiredSize(squares.area)
-                .offset(x = offset.x.dp, y = offset.y.dp)
-                .scale(zoomState)
-        ) {
-            Box(
-                modifier = Modifier
-                    .requiredSize(squares.area)
-                    .offset(x = squares.minX.dp - shadowMargin, y = squares.minY.dp - shadowMargin)
-                    .border(1.dp, Color.Gray)
-                    .zIndex(0f)
-                    .background(Color(0x11000000))
-            )
-            squares.forEach { (id, square) ->
-                key(id) {
-                    ParkingSpot(
-                        square = square,
-                        selected = id == selectedSpot?.id,
-                        longPress = longPress,
-                        onAdd = { viewModel.addParkingSpot(align = it) },
-                        onDragStart = { viewModel.selectSpot(square) }
-                    ) { newSquare, position -> viewModel.saveSpotChanges(newSquare, position) }
+            if (viewModel.selectedSpot.value != null) {
+                Spacer(modifier = Modifier.weight(1f))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Button(onClick = { viewModel.rotateSpot() }) {
+                        Text("Rotate")
+                    }
+                    Button(onClick = { viewModel.deleteSpot() }) {
+                        Text("Delete")
+                    }
+                    Button(onClick = { viewModel.unselectSpot() }) {
+                        Text("Unselect")
+                    }
                 }
             }
         }
+        ParkingView(viewModel = viewModel, longPress = longPress)
     }
-}
-
-@Composable
-private fun ParkingSpot(
-    square: PlaceSpot,
-    selected: Boolean,
-    longPress: Boolean = false,
-    onAdd: (PlaceSpot.Alignment) -> Unit = {},
-    onDragStart: () -> Unit = {},
-    onDragEnd: (PlaceSpot, Position) -> Position = { _, _ -> Position(0f, 0f) }
-) {
-    val density: Float = LocalDensity.current.density
-    var offset by remember { mutableStateOf(square.position) }
-    Box(
-        modifier = Modifier
-            .offset(
-                x = offset.x.dp,
-                y = offset.y.dp
-            )
-            .size(square.size.width.dp, square.size.height.dp)
-            .border(2.dp, if (selected) Color.Green else Color.Yellow)
-            .zIndex(if (selected) 20f else 10f)
-            .background(Color.Transparent)
-            .pointerInput(longPress) {
-                if (longPress) {
-                    detectDragGesturesAfterLongPress(
-                        onDragStart = { onDragStart() },
-                        onDragEnd = { offset = onDragEnd(square, offset) },
-                    ) { _, dragAmount ->
-                        if (dragAmount != Offset(0f, 0f)) {
-                            offset = offset.plus((dragAmount / density))
-                        }
-                    }
-                } else {
-                    detectDragGestures(
-                        onDragStart = { onDragStart() },
-                        onDragEnd = { offset = onDragEnd(square, offset) }
-                    ) { _, dragAmount ->
-                        if (dragAmount != Offset(0f, 0f)) {
-                            offset = offset.plus((dragAmount / density))
-                        }
-                    }
+    LaunchedEffect(true) {
+        viewModel.loadParkingSpots()
+    }
+    if (showDialog) {
+        var textInput by remember { mutableStateOf("") }
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Informe a vaga") },
+            text = {
+                Column {
+                    TextField(
+                        value = textInput,
+                        onValueChange = { textInput = it },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        keyboardActions = KeyboardActions(onDone = { showDialog = false })
+                    )
+                    Text("caso a vaga não existir ela será criada")
                 }
             },
-        contentAlignment = square.size.let {
-            if (it.width > it.height) Alignment.CenterEnd
-            else Alignment.BottomCenter
-        }
-    ) {
-        TextWithBorder(
-            modifier = Modifier
-                .offset(
-                    x = if (square.size.width > square.size.height) (-15).dp else 0.dp,
-                    y = if (square.size.width > square.size.height) 0.dp else (-15).dp
-                ),
-            boxColor = if (selected) Color.Green else Color.Yellow,
-            text = square.id
-        )
-        if (isDebug) {
-            Box(
-                contentAlignment = square.size.let {
-                    if (it.width > it.height) Alignment.CenterStart
-                    else Alignment.TopCenter
-                },
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                Column() {
-                    Text(text = "ox: ${offset.x.toInt()}")
-                    Text(text = "oy: ${offset.y.toInt()}")
-                    Text(text = "sx: ${square.position.x.toInt()}")
-                    Text(text = "sy: ${square.position.y.toInt()}")
+            confirmButton = {
+                TextButton(onClick = {
+                    showDialog = false
+                    viewModel.findSpot(textInput)
+                }) {
+                    Text("Confirmar")
                 }
-            }
-        }
-        if (selected) {
-            val dpOffset = 70.dp
-            val css = Modifier.background(Color.Gray.copy(alpha = 0.6f), CircleShape)
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .offset(x = -dpOffset), contentAlignment = Alignment.CenterStart
-            ) {
-                IconButton(modifier = css, onClick = { onAdd(PlaceSpot.Alignment.LEFT) }) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Adicionar a Esquerda")
-                }
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .offset(x = dpOffset), contentAlignment = Alignment.CenterEnd
-            ) {
-                IconButton(modifier = css, onClick = { onAdd(PlaceSpot.Alignment.RIGHT) }) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Adicionar a Direita")
-                }
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .offset(y = -dpOffset), contentAlignment = Alignment.TopCenter
-            ) {
-                IconButton(modifier = css, onClick = { onAdd(PlaceSpot.Alignment.TOP) }) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Adicionar em Cima")
-                }
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .offset(y = dpOffset), contentAlignment = Alignment.BottomCenter
-            ) {
-                IconButton(modifier = css, onClick = { onAdd(PlaceSpot.Alignment.BOTTOM) }) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Adicionar em Baixo")
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun TextWithBorder(
-    modifier: Modifier = Modifier,
-    boxColor: Color,
-    text: String,
-    size: Float = 30f,
-) {
-    val textPaintStroke = Paint().asFrameworkPaint().apply {
-        isAntiAlias = true
-        style = android.graphics.Paint.Style.STROKE
-        textSize = size
-        color = android.graphics.Color.BLACK
-        strokeWidth = size * 0.1f
-        strokeMiter = size * 0.1f
-        strokeJoin = android.graphics.Paint.Join.ROUND
-    }
-    val textPaint = Paint().asFrameworkPaint().apply {
-        isAntiAlias = true
-        style = android.graphics.Paint.Style.FILL_AND_STROKE
-        textSize = size
-        color = android.graphics.Color.WHITE
-    }
-    val density = LocalDensity.current.density
-    val heightSize = size / density * 1.2
-    val widthSize = size / density * 0.6
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = modifier
-            .size(40.dp, 30.dp)
-            .background(boxColor, CircleShape)
-    ) {
-        Canvas(
-            modifier = Modifier.size((widthSize * text.length).dp, heightSize.dp),
-            onDraw = {
-                drawIntoCanvas {
-                    it.nativeCanvas.drawText(text, 0f, size, textPaintStroke)
-                    it.nativeCanvas.drawText(text, 0f, size, textPaint)
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Cancelar")
                 }
             }
         )
     }
-}
-
-@Preview
-@Composable
-fun PreviewParkingSpotSelected() {
-    ParkingSpot(
-        square = PlaceSpot("1"),
-        selected = true,
-    )
-}
-
-@Preview
-@Composable
-fun PreviewParkingSpot() {
-    ParkingSpot(
-        square = PlaceSpot("1534"),
-        selected = false,
-    )
-}
-
-@Preview
-@Composable
-fun PreviewDragAndDropSquares() {
-    val viewModel: ParkingEditViewModel = viewModel()
-    viewModel.addParkingSpot(save = false)
-    viewModel.addParkingSpot(save = false)
-    viewModel.addParkingSpot(save = false)
-    DragAndDropSquares(viewModel = viewModel, longPress = false)
 }

@@ -7,7 +7,7 @@ data class Place(
     @JvmField @DocumentId
     var id: String = "",
     @JvmField @PropertyName("name")
-    var name: String,
+    var name: String = "",
     @JvmField @PropertyName("address")
     var address: Address = Address(),
     @JvmField @PropertyName("floors")

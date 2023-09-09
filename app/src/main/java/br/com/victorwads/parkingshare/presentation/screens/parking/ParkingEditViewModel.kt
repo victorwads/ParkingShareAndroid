@@ -1,29 +1,36 @@
 package br.com.victorwads.parkingshare.presentation.screens.parking
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import br.com.victorwads.parkingshare.data.ParkingSpotsRepository
 import br.com.victorwads.parkingshare.data.models.PlaceSpot
 import br.com.victorwads.parkingshare.data.models.area
 import br.com.victorwads.parkingshare.data.models.boxSpot
 import br.com.victorwads.parkingshare.data.models.fixPosition
 import br.com.victorwads.parkingshare.data.models.lastId
-import br.com.victorwads.parkingshare.data.models.maxX
-import br.com.victorwads.parkingshare.data.models.maxY
+import br.com.victorwads.parkingshare.data.models.maxXPoint
+import br.com.victorwads.parkingshare.data.models.maxYPoint
 import br.com.victorwads.parkingshare.data.models.minX
 import br.com.victorwads.parkingshare.data.models.minY
+import br.com.victorwads.parkingshare.di.PreviewViewModelsFactory
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class ParkingEditViewModel : ViewModel() {
+class ParkingEditViewModel(
+    private val parkingSpotsRepository: ParkingSpotsRepository,
+    private val turnOffAnimations: Boolean = false
+) : ViewModel() {
 
-    private val parkingSpotsRepository = ParkingSpotsRepository()
     private val tempFloor = "T"
 
     val newItemsAlignment = mutableStateOf(PlaceSpot.Alignment.RIGHT)
@@ -56,7 +63,14 @@ class ParkingEditViewModel : ViewModel() {
         } ?: addParkingSpot(name = term)
     }
 
-    fun addParkingSpot(name: String? = null, save: Boolean = true, align: PlaceSpot.Alignment? = null): PlaceSpot {
+    fun addParkingSpot(align: PlaceSpot.Alignment, jump: Int = 1, from: PlaceSpot? = null): PlaceSpot {
+        from?.let { selectedSpot.value = it }
+        newItemsAlignment.value = align
+        newItemsJump.value = jump
+        return addParkingSpot()
+    }
+
+    fun addParkingSpot(name: String? = null, align: PlaceSpot.Alignment? = null): PlaceSpot {
         align?.let { newItemsAlignment.value = it }
         val new = (selectedSpot.value ?: parkingSpots.lastId).let { selectedSpot ->
             selectedSpot.copy(
@@ -67,7 +81,7 @@ class ParkingEditViewModel : ViewModel() {
             parkingSpots[it.id] = it.fixPosition(parkingSpots)
             selectedSpot.value = it
             animateToSpot(it)
-            if (save) saveSpotChanges(it)
+            saveSpotChanges(it)
         }
         return new
     }
@@ -112,9 +126,9 @@ class ParkingEditViewModel : ViewModel() {
         val halfScreenX = size.value.width / 2
         val halfScreenY = size.value.height / 2
         val maxX = (parkingSpots.minX * -1) + halfScreenX
-        val minX = (parkingSpots.maxX * -1) + halfScreenX
+        val minX = (parkingSpots.maxXPoint * -1) + halfScreenX
         val maxY = (parkingSpots.minY * -1) + halfScreenY
-        val minY = (parkingSpots.maxY * -1) + halfScreenY
+        val minY = (parkingSpots.maxYPoint * -1) + halfScreenY
         val zoom = this.zoom.floatValue
 
         this.offset.value = Offset(
@@ -123,7 +137,7 @@ class ParkingEditViewModel : ViewModel() {
         )
     }
 
-    private fun saveSpotChanges(spot: PlaceSpot) = parkingSpotsRepository.updateSpot(tempFloor, spot)
+    private fun saveSpotChanges(spot: PlaceSpot) = Unit//parkingSpotsRepository.updateSpot(tempFloor, spot)
 
     private fun animateToSpot(spot: PlaceSpot, zoom: Float = 1f) = animateToTarget(
         targetOffset = Offset(spot.position.x, spot.position.y),
@@ -138,15 +152,19 @@ class ParkingEditViewModel : ViewModel() {
         duration: Long = 250,
         steps: Int = (duration / 1000f * 120f).toInt()
     ) {
+        var realTargetOffset = targetOffset.adaptToBox()
+        realTargetOffset += Offset((size.value.width / 2).toFloat(), (size.value.height / 2).toFloat())
+        realTargetOffset -= Offset((targetSize.width / 2).toFloat(), (targetSize.height / 2).toFloat())
+        realTargetOffset *= targetZoom
+        if (turnOffAnimations) {
+            offset.value = realTargetOffset
+            zoom.floatValue = targetZoom
+            return
+        }
         viewModelScope.launch {
-            val delayTime = duration / steps
             val initialOffset = offset.value
+            val delayTime = duration / steps
             val initialZoom = zoom.floatValue
-            var realTargetOffset = targetOffset.adaptToBox()
-            // center the target on screen
-            realTargetOffset += Offset((size.value.width / 2).toFloat(), (size.value.height / 2).toFloat())
-            realTargetOffset -= Offset((targetSize.width / 2).toFloat(), (targetSize.height / 2).toFloat())
-            realTargetOffset *= targetZoom
 
             val stepX = (realTargetOffset.x - initialOffset.x) / steps
             val stepY = (realTargetOffset.y - initialOffset.y) / steps
@@ -172,5 +190,22 @@ class ParkingEditViewModel : ViewModel() {
 
     fun center() {
         animateToSpot(selectedSpot.value ?: parkingSpots.boxSpot, zoom = zoom.floatValue)
+    }
+}
+
+@Preview
+@Composable
+fun PreviewParkingViewModel() {
+    val viewModel: ParkingEditViewModel = viewModel(factory = PreviewViewModelsFactory())
+    ParkingView(viewModel = viewModel, longPress = false)
+    LaunchedEffect(Unit) {
+        with(viewModel) {
+            addParkingSpot()
+            addParkingSpot(PlaceSpot.Alignment.BOTTOM)
+            addParkingSpot(PlaceSpot.Alignment.RIGHT, 2, from = parkingSpots["0"])
+            addParkingSpot(PlaceSpot.Alignment.BOTTOM)
+            unselectSpot()
+            center()
+        }
     }
 }

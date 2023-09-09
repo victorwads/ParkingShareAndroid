@@ -8,8 +8,12 @@ val Map<String, PlaceSpot>.minX
 val Map<String, PlaceSpot>.minY
     get() = this.minOfOrNull { it.value.position.y } ?: 0f
 val Map<String, PlaceSpot>.maxX
-    get() = this.maxOfOrNull { it.value.position.x + it.value.size.width } ?: 0f
+    get() = this.maxOfOrNull { it.value.position.x } ?: 0f
 val Map<String, PlaceSpot>.maxY
+    get() = this.maxOfOrNull { it.value.position.y } ?: 0f
+val Map<String, PlaceSpot>.maxXPoint
+    get() = this.maxOfOrNull { it.value.position.x + it.value.size.width } ?: 0f
+val Map<String, PlaceSpot>.maxYPoint
     get() = this.maxOfOrNull { it.value.position.y + it.value.size.height } ?: 0f
 val Map<String, PlaceSpot>.centerX
     get() = (minX + maxX) / 2
@@ -20,8 +24,8 @@ val Map<String, PlaceSpot>.boxSpot
 
 val Map<String, PlaceSpot>.area
     get() = DpSize(
-        (maxX - minX).dp + (shadowMargin * 2),
-        (maxY - minY).dp + (shadowMargin * 2)
+        (maxXPoint - minX).dp + (shadowMargin * 2),
+        (maxYPoint - minY).dp + (shadowMargin * 2)
     )
 
 val Map<String, PlaceSpot>.lastId

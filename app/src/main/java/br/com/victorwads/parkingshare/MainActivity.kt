@@ -16,7 +16,7 @@ import br.com.victorwads.parkingshare.data.UserRepository
 import br.com.victorwads.parkingshare.presentation.screens.Screens
 import br.com.victorwads.parkingshare.presentation.screens.home.HomeScreen
 import br.com.victorwads.parkingshare.presentation.screens.login.LoginScreenWithGoogle
-import br.com.victorwads.parkingshare.presentation.screens.parking.ParkingEditorScreen
+import br.com.victorwads.parkingshare.presentation.screens.parking.ParkingViewEditor
 import br.com.victorwads.parkingshare.presentation.theme.ParkingShareTheme
 
 class MainActivity : ComponentActivity() {
@@ -62,7 +62,7 @@ class MainActivity : ComponentActivity() {
         }
 
         composable(Screens.ParkingEditor.route) {
-            ParkingEditorScreen()
+            ParkingViewEditor()
         }
     }
 
