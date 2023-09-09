@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
@@ -76,14 +77,18 @@ fun DragAndDropSquares(
                 }
             }
     ) {
-        Column {
-            Text(text = "zoom: $zoomState")
-            Text(text = "offset: $offset")
-            Text(text = "size: $size")
-        }
+        if (BuildConfig.DEBUG)
+            Column {
+                Text(text = "zoom: $zoomState")
+                Text(text = "offset: $offset")
+                Text(text = "boxSize: $size")
+                Text(text = "squareArea: ${squares.area}")
+                Text("PonX: ${((squares.area.width.value - size.width) / 2f) + (size.width / 2f) - offset.x}")
+                Text("PonY: ${((squares.area.height.value - size.height) / 2f) + (size.height / 2f) - offset.y}")
+            }
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .requiredSize(squares.area)
                 .offset(x = offset.x.dp, y = offset.y.dp)
                 .scale(zoomState)
         ) {
@@ -96,6 +101,13 @@ fun DragAndDropSquares(
                     ) { newSquare, position -> viewModel.saveSpotChanges(newSquare, position) }
                 }
             }
+            Box(
+                modifier = Modifier
+                    .requiredSize(squares.area)
+                    .offset(x = squares.minX.dp - shadowMargin, y = squares.minY.dp - shadowMargin)
+                    .border(1.dp, Color.Gray)
+                    .background(Color(0x33000000))
+            )
         }
     }
 }

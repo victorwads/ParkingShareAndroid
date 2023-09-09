@@ -4,7 +4,9 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.victorwads.parkingshare.data.ParkingSpotsRepository
@@ -19,7 +21,7 @@ class ParkingEditViewModel : ViewModel() {
 
     val parkingSpots = mutableStateMapOf<String, PlaceSpot>()
     val selectedSpot = mutableStateOf<PlaceSpot?>(null)
-    val zoom = mutableFloatStateOf(1f)
+    val zoom = mutableFloatStateOf(0f)
     val offset = mutableStateOf(Offset(0f, 0f))
     val size = mutableStateOf(IntSize(0, 0))
 
@@ -85,7 +87,7 @@ class ParkingEditViewModel : ViewModel() {
 
     fun updateOffset(offset: Offset) {
         this.offset.value = offset
-        return
+        return // TODO review limits
         val halfScreenX = size.value.width / 2
         val halfScreenY = size.value.height / 2
         val maxX = (parkingSpots.minX * -1) + halfScreenX
@@ -103,7 +105,7 @@ class ParkingEditViewModel : ViewModel() {
     private fun saveSpotChanges(spot: PlaceSpot) = parkingSpotsRepository.updateSpot(tempFloor, spot)
 
     private fun animateToSpot(spot: PlaceSpot, zoom: Float = 1f) = animateToTarget(
-        targetOffset = Offset(spot.position.x * -1, spot.position.y * -1),
+        targetOffset = Offset(spot.position.x, spot.position.y),
         targetZoom = zoom,
         targetSize = IntSize(spot.size.width.toInt(), spot.size.height.toInt())
     )
@@ -119,7 +121,7 @@ class ParkingEditViewModel : ViewModel() {
             val delayTime = duration / steps
             val initialOffset = offset.value
             val initialZoom = zoom.floatValue
-            var realTargetOffset = targetOffset
+            var realTargetOffset = targetOffset.adaptToBox()
             // center the target on screen
             realTargetOffset += Offset((size.value.width / 2).toFloat(), (size.value.height / 2).toFloat())
             realTargetOffset -= Offset((targetSize.width / 2).toFloat(), (targetSize.height / 2).toFloat())
@@ -142,6 +144,10 @@ class ParkingEditViewModel : ViewModel() {
         }
     }
 
+    private fun Offset.adaptToBox() = Offset(
+        ((parkingSpots.area.width.value - size.value.width) / 2f) - this.x,
+        ((parkingSpots.area.height.value - size.value.height) / 2f) - this.y
+    )
 }
 
 val Map<String, PlaceSpot>.minX
@@ -158,3 +164,10 @@ val Map<String, PlaceSpot>.centerY
     get() = (minY + maxY) / 2
 val Map<String, PlaceSpot>.boxSpot
     get() = PlaceSpot(position = PlaceSpot.Position(centerX, centerY))
+
+val shadowMargin = 100.dp
+val Map<String, PlaceSpot>.area
+    get() = DpSize(
+        (maxX - minX).dp + (shadowMargin * 2),
+        (maxY - minY).dp + (shadowMargin * 2)
+    )
