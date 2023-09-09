@@ -28,11 +28,11 @@ class ParkingEditViewModel : ViewModel() {
             parkingSpotsRepository.getAllSpots(tempFloor).let {
                 parkingSpots.clear()
                 parkingSpots.putAll(it)
-                animateToTarget(
-                    targetOffset = parkingSpots.initBoxOffSet,
-                    targetZoom = 0.1f,
-                    centerOffset = Offset(size.value.width.toFloat(), size.value.height.toFloat())
+                offset.value = Offset(
+                    parkingSpots.centerX,
+                    parkingSpots.centerY
                 )
+                //animateToSpot(parkingSpots.boxSpot, 0.1f)
             }
         }
     }
@@ -40,7 +40,7 @@ class ParkingEditViewModel : ViewModel() {
     fun findSpot(id: String) {
         parkingSpots[id]?.let {
             selectedSpot.value = it
-            animateToSpot(it, zoom = 1f)
+            animateToSpot(it)
         } ?: addParkingSpot(name = id)
     }
 
@@ -87,57 +87,65 @@ class ParkingEditViewModel : ViewModel() {
         parkingSpots.remove(square.id)
     }
 
-    private fun saveSpotChanges(spot: PlaceSpot) {
-        parkingSpotsRepository.updateSpot(tempFloor, spot)
-    }
+    fun updateOffset(offset: Offset) {
+        this.offset.value = offset
+        return
+        val halfScreenX = size.value.width / 2
+        val halfScreenY = size.value.height / 2
+        val maxX = (parkingSpots.minX * -1) + halfScreenX
+        val minX = (parkingSpots.maxX * -1) + halfScreenX
+        val maxY = (parkingSpots.minY * -1) + halfScreenY
+        val minY = (parkingSpots.maxY * -1) + halfScreenY
+        val zoom = this.zoom.floatValue
 
-    private fun animateToSpot(spot: PlaceSpot, zoom: Float? = null) {
-        animateToTarget(
-            targetOffset = Offset(spot.position.x * -1, spot.position.y * -1),
-            centerOffset = Offset(spot.size.width, spot.size.height),
-            targetZoom = zoom ?: this.zoom.floatValue,
+        this.offset.value = Offset(
+            offset.x.coerceIn(minX * zoom, maxX * zoom),
+            offset.y.coerceIn(minY * zoom, maxY * zoom)
         )
     }
+
+    private fun saveSpotChanges(spot: PlaceSpot) = parkingSpotsRepository.updateSpot(tempFloor, spot)
+
+    private fun animateToSpot(spot: PlaceSpot, zoom: Float = 1f) = animateToTarget(
+        targetOffset = Offset(spot.position.x * -1, spot.position.y * -1),
+        targetZoom = zoom,
+        targetSize = IntSize(spot.size.width.toInt(), spot.size.height.toInt())
+    )
 
     private fun animateToTarget(
         targetOffset: Offset = offset.value,
         targetZoom: Float = zoom.floatValue,
-        center: Boolean = true,
-        centerOffset: Offset = Offset(0f, 0f),
+        targetSize: IntSize = IntSize(0, 0),
         duration: Long = 250,
         steps: Int = (duration / 1000f * 120f).toInt()
     ) {
         viewModelScope.launch {
-            val initialOffset = offset.value
-            var realTargetOffset = (targetOffset * targetZoom)
-            if (center) {
-                realTargetOffset += Offset(size.value.width / 2f, size.value.height / 2f)
-                realTargetOffset -= centerOffset / 2f
-            }
-            val initialZoom = zoom.floatValue
-
-            val diffX = realTargetOffset.x - initialOffset.x
-            val diffY = realTargetOffset.y - initialOffset.y
-            val diffZoom = targetZoom - initialZoom
-
-            val stepX = diffX / steps
-            val stepY = diffY / steps
-            val stepZoom = diffZoom / steps
-
             val delayTime = duration / steps
+            val initialOffset = offset.value
+            val initialZoom = zoom.floatValue
+            var realTargetOffset = targetOffset
+            // center the target on screen
+            realTargetOffset += Offset((size.value.width / 2).toFloat(), (size.value.height / 2).toFloat())
+            realTargetOffset -= Offset((targetSize.width / 2).toFloat(), (targetSize.height / 2).toFloat())
+            realTargetOffset *= targetZoom
+
+            val stepX = (realTargetOffset.x - initialOffset.x) / steps
+            val stepY = (realTargetOffset.y - initialOffset.y) / steps
+            val stepZoom = (targetZoom - initialZoom) / steps
 
             for (i in 1..steps) {
-                delay(delayTime)
                 offset.value = Offset(
                     initialOffset.x + stepX * i,
                     initialOffset.y + stepY * i
                 )
                 zoom.floatValue = initialZoom + stepZoom * i
+                delay(delayTime)
             }
             offset.value = realTargetOffset
             zoom.floatValue = targetZoom
         }
     }
+
 }
 
 val Map<String, PlaceSpot>.minX
@@ -145,38 +153,12 @@ val Map<String, PlaceSpot>.minX
 val Map<String, PlaceSpot>.minY
     get() = this.minOfOrNull { it.value.position.y } ?: 0f
 val Map<String, PlaceSpot>.maxX
-    get() = this.maxOfOrNull { it.value.position.x } ?: 0f
+    get() = this.maxOfOrNull { it.value.position.x + it.value.size.width } ?: 0f
 val Map<String, PlaceSpot>.maxY
-    get() = this.maxOfOrNull { it.value.position.y } ?: 0f
-
-
-val Map<String, PlaceSpot>.initBoxOffSet // Center
-    get() = Offset(
-        (maxX - minX) / 2f,
-        (maxY - minY) / 2f
-    )
-
-fun Offset.limitOut(
-    squaresMap: Map<String, PlaceSpot>,
-    zoom: Float,
-    marginHorizontal: Float,
-    marginVertical: Float
-): Offset {
-//    val squares = squaresMap.map { it.value }
-//    val minX = squares.minX
-//    val maxX = squares.maxOfOrNull { it.position.x } ?: 0f
-//    val minY = squares.minY
-//    val maxY = squares.maxOfOrNull { it.position.y } ?: 0f
-
-    return this
-//    Offset(
-//        this.x.coerceIn(
-//            (maxX * (-1) + marginHorizontal) * zoom,
-//            (minX * (-1) + marginHorizontal) * zoom
-//        ),
-//        this.y.coerceIn(
-//            (maxY * (-1) + marginVertical) * zoom,
-//            (minY * (-1) + marginVertical) * zoom
-//        )
-//    )
-}
+    get() = this.maxOfOrNull { it.value.position.y + it.value.size.height } ?: 0f
+val Map<String, PlaceSpot>.centerX
+    get() = (minX + maxX) / 2
+val Map<String, PlaceSpot>.centerY
+    get() = (minY + maxY) / 2
+val Map<String, PlaceSpot>.boxSpot
+    get() = PlaceSpot(position = PlaceSpot.Position(centerX, centerY))
