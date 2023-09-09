@@ -67,8 +67,11 @@ fun DragAndDropSquares(
                 detectTransformGestures { _, pan, zoom, rotation ->
                     Log.i("Gesture", "X: ${pan.x}, Y: ${pan.y}, Zoom: $zoom, Rotation: $rotation")
                     zoomState *= zoom
-                    if (zoomState > 1f) zoomState = 1f
-                    else if (zoomState < 0.1f) zoomState = 0.1f
+                    if (zoomState < 0.1f) zoomState = 0.1f
+                    else if (zoomState > 1f) {
+                        zoomState = 1f
+                        return@detectTransformGestures
+                    }
 
                     offset = (offset * zoom + (pan / density))
                         .limitOut(squares, zoomState, size.width.toFloat(), size.height.toFloat())
