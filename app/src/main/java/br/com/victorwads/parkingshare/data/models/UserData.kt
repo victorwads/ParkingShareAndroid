@@ -2,6 +2,7 @@ package br.com.victorwads.parkingshare.data.models
 
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.PropertyName
+
 data class UserData(
     @JvmField @DocumentId
     var id: String = "",

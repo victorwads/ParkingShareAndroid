@@ -13,7 +13,7 @@ class ParkingSpotsRepository(
         floors = listOf("T", "1", "2"),
     )
 ) {
-    private val db = FirebaseFirestore.getInstance()
+    private val db by lazy { FirebaseFirestore.getInstance() }
 
     fun updateSpot(floor: String, spot: PlaceSpot) {
         getFloorsRef(floor).document(spot.id).set(spot)

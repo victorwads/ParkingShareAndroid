@@ -37,5 +37,7 @@ data class PlaceSpot(
         operator fun plus(offset: Offset): Position {
             return Position(x + offset.x, y + offset.y)
         }
+
+        fun toOffset() = Offset(x, y)
     }
 }

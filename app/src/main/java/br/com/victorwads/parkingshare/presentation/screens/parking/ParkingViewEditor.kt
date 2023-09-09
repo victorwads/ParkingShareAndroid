@@ -1,6 +1,7 @@
 package br.com.victorwads.parkingshare.presentation.screens.parking
 
 import android.util.Log
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -10,26 +11,35 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import br.com.victorwads.parkingshare.BuildConfig
 import br.com.victorwads.parkingshare.data.models.PlaceSpot
+import br.com.victorwads.parkingshare.data.models.PlaceSpot.Position
+
+val darkYellow = Color(0xFFDDBB00)
 
 @Composable
 fun DragAndDropSquares(
@@ -40,13 +50,19 @@ fun DragAndDropSquares(
     var zoomState by remember { viewModel.zoom }
     var offset by remember { viewModel.offset }
     var size by remember { viewModel.size }
+    val density = LocalDensity.current.density
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .clipToBounds()
             .border(1.dp, Color.Red)
-            .onSizeChanged { size = it }
+            .onSizeChanged {
+                size = IntSize(
+                    (it.width.toFloat() / density).toInt(),
+                    (it.height.toFloat() / density).toInt()
+                )
+            }
             .pointerInput(squares) {
                 detectTransformGestures { _, pan, zoom, rotation ->
                     Log.i("Gesture", "X: ${pan.x}, Y: ${pan.y}, Zoom: $zoom, Rotation: $rotation")
@@ -64,14 +80,20 @@ fun DragAndDropSquares(
             Text(text = "offset: $offset")
             Text(text = "size: $size")
         }
-        squares.forEach { (id, square) ->
-            key(id) {
-                ParkingSpot(
-                    square = square,
-                    selected = id == selectedSpot?.id,
-                    zoom = zoomState, boxOffset = offset,
-                    onDrag = { viewModel.selectSpot(square) }
-                ) { newSquare -> viewModel.saveSpotChanges(newSquare) }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .offset(x = offset.x.dp, y = offset.y.dp)
+                .scale(zoomState)
+        ) {
+            squares.forEach { (id, square) ->
+                key(id) {
+                    ParkingSpot(
+                        square = square,
+                        selected = id == selectedSpot?.id,
+                        onDragStart = { viewModel.selectSpot(square) }
+                    ) { newSquare, position -> viewModel.saveSpotChanges(newSquare, position) }
+                }
             }
         }
     }
@@ -81,70 +103,96 @@ fun DragAndDropSquares(
 private fun ParkingSpot(
     square: PlaceSpot,
     selected: Boolean,
-    zoom: Float, boxOffset: Offset,
     density: Float = LocalDensity.current.density,
-    onDrag: () -> Unit,
-    onDragEnd: (PlaceSpot) -> Unit
+    onDragStart: () -> Unit = {},
+    onDragEnd: (PlaceSpot, Position) -> Position = { _, _ -> Position(0f, 0f) }
 ) {
     var offset by remember { mutableStateOf(square.position) }
     Box(
         modifier = Modifier
             .offset(
-                x = (offset.x * zoom + boxOffset.x).dp,
-                y = (offset.y * zoom + boxOffset.y).dp
+                x = offset.x.dp,
+                y = offset.y.dp
             )
-            .scale(zoom)
             .size(square.size.width.dp, square.size.height.dp)
-            .border(2.dp, if (selected) Color.Blue else Color.Yellow)
+            .border(2.dp, if (selected) Color.White else darkYellow)
             .background(Color.Transparent)
             .pointerInput(selected) {
                 detectDragGesturesAfterLongPress(
-                    onDragStart = { onDrag() },
+                    onDragStart = { onDragStart() },
                     onDragEnd = {
-                        square.position = offset
-                        onDragEnd(square)
+                        offset = onDragEnd(square, offset)
                     },
                 ) { _, dragAmount ->
                     if (dragAmount != Offset(0f, 0f)) {
                         offset = offset.plus((dragAmount / density))
                     }
                 }
-            }
+            },
+        contentAlignment = Alignment.BottomCenter
     ) {
-        Column {
-            Text(text = "id: ${square.id}")
-            Text(text = "ox: ${offset.x.toInt()}")
-            Text(text = "oy: ${offset.y.toInt()}")
-            Text(text = "sx: ${square.position.x.toInt()}")
-            Text(text = "sy: ${square.position.y.toInt()}")
+        TextWithBorder(
+            boxColor = if (selected) Color.White else darkYellow,
+            text = square.id
+        )
+        if (BuildConfig.DEBUG) {
+            Box(
+                contentAlignment = Alignment.TopCenter,
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                Column() {
+                    Text(text = "ox: ${offset.x.toInt()}")
+                    Text(text = "oy: ${offset.y.toInt()}")
+                    Text(text = "sx: ${square.position.x.toInt()}")
+                    Text(text = "sy: ${square.position.y.toInt()}")
+                }
+            }
         }
     }
 }
 
-
-fun Offset.limitOut(
-    squaresMap: Map<String, PlaceSpot>,
-    zoom: Float,
-    marginHorizontal: Float,
-    marginVertical: Float
-): Offset {
-//    val squares = squaresMap.map { it.value }
-//    val minX = squares.minX
-//    val maxX = squares.maxOfOrNull { it.position.x } ?: 0f
-//    val minY = squares.minY
-//    val maxY = squares.maxOfOrNull { it.position.y } ?: 0f
-
-    return this
-//    Offset(
-//        this.x.coerceIn(
-//            (maxX * (-1) + marginHorizontal) * zoom,
-//            (minX * (-1) + marginHorizontal) * zoom
-//        ),
-//        this.y.coerceIn(
-//            (maxY * (-1) + marginVertical) * zoom,
-//            (minY * (-1) + marginVertical) * zoom
-//        )
-//    )
+@Composable
+fun TextWithBorder(
+    boxColor: Color,
+    text: String,
+    size: Float = 38f,
+) {
+    val textPaintStroke = Paint().asFrameworkPaint().apply {
+        isAntiAlias = true
+        style = android.graphics.Paint.Style.STROKE
+        textSize = size
+        color = android.graphics.Color.BLACK
+        strokeWidth = size * 0.25f
+        strokeMiter = size * 0.25f
+        strokeJoin = android.graphics.Paint.Join.ROUND
+    }
+    val textPaint = Paint().asFrameworkPaint().apply {
+        isAntiAlias = true
+        style = android.graphics.Paint.Style.FILL
+        textSize = size
+        color = android.graphics.Color.WHITE
+    }
+    val density = LocalDensity.current.density
+    val heightSize = size / density * 1.2
+    val widthSize = size / density * 0.6
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(40.dp, 30.dp)
+            .offset(y = (-15).dp)
+            .background(boxColor, CircleShape)
+    ) {
+        Canvas(
+            modifier = Modifier.size((widthSize * text.length).dp, heightSize.dp),
+            onDraw = {
+                drawIntoCanvas {
+                    it.nativeCanvas.drawText(text, 0f, size, textPaintStroke)
+                    it.nativeCanvas.drawText(text, 0f, size, textPaint)
+                }
+            }
+        )
+    }
 }
 
 @Preview
@@ -153,30 +201,24 @@ fun PreviewParkingSpotSelected() {
     ParkingSpot(
         square = PlaceSpot("1"),
         selected = true,
-        zoom = 1f,
-        boxOffset = Offset(0f, 0f),
-        onDrag = {}
-    ) {}
+    )
 }
 
 @Preview
 @Composable
 fun PreviewParkingSpot() {
     ParkingSpot(
-        square = PlaceSpot("1"),
+        square = PlaceSpot("15"),
         selected = false,
-        zoom = 1f,
-        boxOffset = Offset(0f, 0f),
-        onDrag = {}
-    ) {}
+    )
 }
 
 @Preview
 @Composable
 fun PreviewDragAndDropSquares() {
     val viewModel: ParkingEditViewModel = viewModel()
-    viewModel.addParkingSpot()
-    viewModel.addParkingSpot()
-    viewModel.addParkingSpot()
+    viewModel.addParkingSpot(save = false)
+    viewModel.addParkingSpot(save = false)
+    viewModel.addParkingSpot(save = false)
     DragAndDropSquares(viewModel = viewModel)
 }

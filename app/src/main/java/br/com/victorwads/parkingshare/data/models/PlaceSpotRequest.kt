@@ -18,7 +18,7 @@ data class PlaceSpotRequest(
     @ServerTimestamp
     @JvmField @PropertyName("publishTime")
     var publishTime: Timestamp = Timestamp(Date(0)),
-){
+) {
     data class NeededTime(
         @JvmField @PropertyName("start")
         var startTime: Timestamp = Timestamp(Date(0)),
