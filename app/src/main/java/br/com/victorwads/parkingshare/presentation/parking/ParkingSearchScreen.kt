@@ -1,8 +1,6 @@
 package br.com.victorwads.parkingshare.presentation.parking
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
@@ -15,55 +13,35 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
-import br.com.victorwads.parkingshare.R
+import androidx.navigation.NavController
 import br.com.victorwads.parkingshare.di.PreviewViewModelsFactory
 import br.com.victorwads.parkingshare.di.PreviewViewModelsFactory.Companion.createMediumParkingStop
 import br.com.victorwads.parkingshare.presentation.parking.components.ParkingGraph
-import br.com.victorwads.parkingshare.presentation.parking.components.ParkingViewEditorTools
-import br.com.victorwads.parkingshare.presentation.parking.components.SpotInputMode
 import br.com.victorwads.parkingshare.presentation.parking.viewModel.ParkingEditViewModel
 import br.com.victorwads.parkingshare.presentation.parking.viewModel.ParkingViewEditorErrors
 
+@Preview(device = Devices.PIXEL_4, showSystemUi = true)
+@Preview(device = Devices.TABLET, showSystemUi = true)
 @Composable
-fun ParkingEditorScreen(
-    viewModel: ParkingEditViewModel
+fun ParkingSearchScreen(
+    navController: NavController? = null,
+    viewModel: ParkingEditViewModel = viewModel<ParkingEditViewModel>(factory = PreviewViewModelsFactory())
+        .createMediumParkingStop()
 ) {
-    val context = LocalContext.current
-    var showDialog by remember { mutableStateOf(false) }
-    var longPress by remember { mutableStateOf(true) }
-    Column(modifier = Modifier.fillMaxSize()) {
-        ParkingViewEditorTools(
-            viewModel = viewModel,
-            showDialog = { showDialog = true },
-            changeLongPress = { longPress = it }
-        )
-        ParkingGraph(
-            viewModel = viewModel,
-            inputMode = if (longPress) SpotInputMode.LongPress
-            else SpotInputMode.Touch
-        )
-    }
+    var showDialog by remember { mutableStateOf(true) }
+    var showErrorDialog by remember { mutableStateOf(false) }
+    ParkingGraph(viewModel = viewModel)
     LaunchedEffect(true) {
         viewModel.loadParkingSpots()
         viewModel.errors.observeForever {
-            val message = when (it) {
-                is ParkingViewEditorErrors.RepositoryGenericError ->
-                    context.getString(R.string.error_generic_repository, it.spot.id)
-
-                is ParkingViewEditorErrors.SpotAlreadyExists ->
-                    context.getString(R.string.error_spot_exists, it.spot.id)
-
-                else -> null
-            }
-            message?.let { msg ->
-                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            when (it) {
+                is ParkingViewEditorErrors.SpotNotFound -> showErrorDialog = true
+                else -> {}
             }
         }
     }
@@ -104,13 +82,32 @@ fun ParkingEditorScreen(
             }
         )
     }
-}
-
-@Preview(device = Devices.PIXEL_4, showSystemUi = true)
-@Preview(device = Devices.TABLET, showSystemUi = true)
-@Composable
-fun ParkingViewPreview() {
-    val viewModel = viewModel<ParkingEditViewModel>(factory = PreviewViewModelsFactory())
-    ParkingEditorScreen(viewModel = viewModel)
-    LaunchedEffect(Unit) { viewModel.createMediumParkingStop() }
+    val error = viewModel.errors.value
+    if (showErrorDialog && error is ParkingViewEditorErrors.SpotNotFound) {
+        val onDismissRequest = {
+            showErrorDialog = false
+            navController?.popBackStack()
+            Unit
+        }
+        AlertDialog(
+            onDismissRequest = onDismissRequest,
+            title = { Text("Vaga não encontrada") },
+            text = {
+                Text(
+                    "Não encontramos a vaga com o nome ${error.id}.\n" +
+                            "Gostaria de procurar novamente?"
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { showErrorDialog = false; showDialog = true }) {
+                    Text("Confirmar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismissRequest) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
 }

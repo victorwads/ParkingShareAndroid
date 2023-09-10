@@ -19,6 +19,7 @@ import br.com.victorwads.parkingshare.presentation.Screens
 import br.com.victorwads.parkingshare.presentation.home.HomeScreen
 import br.com.victorwads.parkingshare.presentation.login.LoginScreenWithGoogle
 import br.com.victorwads.parkingshare.presentation.parking.ParkingEditorScreen
+import br.com.victorwads.parkingshare.presentation.parking.ParkingSearchScreen
 import br.com.victorwads.parkingshare.presentation.parking.ParkingViewScreen
 import br.com.victorwads.parkingshare.theme.ParkingShareTheme
 
@@ -53,25 +54,24 @@ class MainActivity : ComponentActivity() {
                 navController.navigate(Screens.Home.route) {
                     popUpTo(Screens.Login.route) { inclusive = true }
                 }
-                UserRepository.shared
-                    .createUserIfNotExists(packageManager.getPackageInfo(packageName, 0))
+                UserRepository.shared.createUserIfNotExists(packageManager.getPackageInfo(packageName, 0))
             }
         }
     }
 
     private fun NavGraphBuilder.mvp(navController: NavController) {
+        val factory = ViewModelsFactory()
         composable(Screens.Home.route) {
             HomeScreen(navController)
         }
         composable(Screens.ParkingEditor.route) {
-            ParkingEditorScreen(
-                viewModel(factory = ViewModelsFactory())
-            )
+            ParkingEditorScreen(viewModel(factory = factory))
         }
         composable(Screens.ParkingView.route) {
-            ParkingViewScreen(
-                viewModel(factory = ViewModelsFactory())
-            )
+            ParkingViewScreen(viewModel(factory = factory))
+        }
+        composable(Screens.ParkingSearch.route) {
+            ParkingSearchScreen(navController, viewModel(factory = factory))
         }
     }
 

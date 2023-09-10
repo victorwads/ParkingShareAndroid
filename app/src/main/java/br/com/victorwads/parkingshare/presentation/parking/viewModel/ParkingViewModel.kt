@@ -26,6 +26,7 @@ import br.com.victorwads.parkingshare.data.models.minX
 import br.com.victorwads.parkingshare.data.models.minY
 import br.com.victorwads.parkingshare.di.PreviewViewModelsFactory
 import br.com.victorwads.parkingshare.presentation.parking.components.ParkingGraph
+import br.com.victorwads.parkingshare.presentation.parking.components.SpotInputMode
 import kotlinx.coroutines.launch
 
 class ParkingEditViewModel(
@@ -34,6 +35,7 @@ class ParkingEditViewModel(
     private val floor: String = "T"
 ) : ViewModel() {
 
+    var inputMode = SpotInputMode.None
     val errors = MutableLiveData<ParkingViewEditorErrors?>()
     val newItemsAlignment = mutableStateOf(PlaceSpot.Alignment.RIGHT)
     val newItemsJump = mutableIntStateOf(1)
@@ -55,7 +57,7 @@ class ParkingEditViewModel(
         }
     }
 
-    fun findSpot(term: String) {
+    fun findSpot(term: String, add: Boolean = inputMode != SpotInputMode.None) {
         val searched = parkingSpots[term]
             ?: parkingSpots.values.find { it.id.lowercase().startsWith(term.lowercase()) }
             ?: parkingSpots.values.find { it.id.lowercase().endsWith(term.lowercase()) }
@@ -63,7 +65,7 @@ class ParkingEditViewModel(
         searched?.let {
             selectedSpot.value = it
             animateToSpot(it)
-        } ?: addParkingSpot(name = term)
+        } ?: addParkingSpot(term)
     }
 
     fun addParkingSpot(align: PlaceSpot.Alignment, jump: Int? = null, from: PlaceSpot? = null): PlaceSpot {
@@ -74,6 +76,10 @@ class ParkingEditViewModel(
     }
 
     fun addParkingSpot(name: String? = null, align: PlaceSpot.Alignment? = null): PlaceSpot {
+        if (inputMode == SpotInputMode.None) {
+            name?.let { errors.value = ParkingViewEditorErrors.SpotNotFound(it) }
+            return PlaceSpot()
+        }
         align?.let { newItemsAlignment.value = it }
         val new = (selectedSpot.value ?: parkingSpots.lastId).let { selectedSpot ->
             selectedSpot.copy(
@@ -150,6 +156,7 @@ class ParkingEditViewModel(
     }
 
     private fun saveSpotChanges(spot: PlaceSpot, onError: () -> Unit = {}) = viewModelScope.launch {
+        if (inputMode == SpotInputMode.None) return@launch
         if (!parkingSpotsRepository.updateSpot(floor, spot)) {
             errors.value = ParkingViewEditorErrors.RepositoryGenericError(spot)
             onError()

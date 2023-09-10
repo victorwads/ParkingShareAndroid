@@ -6,4 +6,5 @@
     <string name="add_right">Adicionar a Direita</string>
     <string name="error_spot_exists">A posição %1$s já existe.</string>
     <string name="error_generic_repository">Erro ao salvar o spot %1$s</string>
+    <string name="home_description">Obrigado por utilizar o aplicativo nessa faze de desenvolvimento.\nAlguns funções estão desativadas pois ainda estão em desenvolvimento e o app ainda vai mudar MUITO na aparencia e nas funcionalidades.\nSinta-se a vontade para fazer criticas e tirar duvidas.</string>
 </resources>

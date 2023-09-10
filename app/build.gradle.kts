@@ -15,8 +15,8 @@ android {
         applicationId = "br.com.victorwads.parkingshare"
         minSdk = 26
         targetSdk = 34
-        versionCode = 5
-        versionName = "09092023.1"
+        versionCode = 6
+        versionName = "10092023.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -102,14 +102,18 @@ dependencies {
     implementation("com.google.firebase:firebase-messaging-ktx:23.2.1")
 
     // Compose
-    implementation(platform("androidx.compose:compose-bom:2023.08.00"))
+    implementation(platform("androidx.compose:compose-bom:2023.09.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose")
     implementation("androidx.navigation:navigation-compose:2.7.2")
     implementation("androidx.activity:activity-compose:1.7.2")
+    implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
+
+    // Images
+    implementation("io.coil-kt:coil-compose:1.3.2")
 
     // Compose Debug
     debugImplementation("androidx.compose.ui:ui-tooling")

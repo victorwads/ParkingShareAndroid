@@ -8,6 +8,7 @@ sealed class Screens(val route: String) {
     object Place : Screens("place")
     object ParkingEditor : Screens("parkingEditor")
     object ParkingView : Screens("parkingView")
+    object ParkingSearch : Screens("parkingSearch")
     object About : Screens("about")
     object Settings : Screens("settings")
 }

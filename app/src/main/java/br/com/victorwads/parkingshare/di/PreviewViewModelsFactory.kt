@@ -41,11 +41,11 @@ class PreviewViewModelsFactory : ViewModelProvider.Factory {
     }
 
     companion object {
-        fun createMediumParkingStop(viewModel: ParkingEditViewModel) = with(viewModel) {
+        fun ParkingEditViewModel.createMediumParkingStop(): ParkingEditViewModel {
             addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot()
             addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot()
             addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot()
-            addParkingSpot(PlaceSpot.Alignment.BOTTOM, 12, from = viewModel.parkingSpots["0"])
+            addParkingSpot(PlaceSpot.Alignment.BOTTOM, 12, from = parkingSpots["0"])
             addParkingSpot(PlaceSpot.Alignment.RIGHT)
             addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot()
             addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot()
@@ -53,6 +53,7 @@ class PreviewViewModelsFactory : ViewModelProvider.Factory {
             unselectSpot()
             zoom.floatValue = 0.5f
             center()
+            return this
         }
     }
 }

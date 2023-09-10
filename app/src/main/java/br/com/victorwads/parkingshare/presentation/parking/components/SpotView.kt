@@ -107,7 +107,7 @@ internal fun SpotView(
                 }
             }
         }
-        if (selected) {
+        if (selected && inputMode != SpotInputMode.None) {
             val dpOffset = 70.dp
             AddButton(Modifier.offset(x = -dpOffset), PlaceSpot.Alignment.LEFT, events.onAdd)
             AddButton(Modifier.offset(x = dpOffset), PlaceSpot.Alignment.RIGHT, events.onAdd)

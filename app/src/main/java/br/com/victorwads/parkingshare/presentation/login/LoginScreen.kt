@@ -6,18 +6,25 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.twotone.Person
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import br.com.victorwads.parkingshare.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -27,6 +34,8 @@ import com.google.firebase.auth.GoogleAuthProvider
 
 @Composable
 fun LoginScreenWithGoogle(onSuccess: () -> Unit) {
+    var stateLogin by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
     val googleSignInLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -42,22 +51,20 @@ fun LoginScreenWithGoogle(onSuccess: () -> Unit) {
                 .signInWithCredential(credential)
                 .addOnCompleteListener {
                     if (it.isSuccessful) onSuccess()
-                    else Toast.makeText(
-                        context, "Google Sign-In failed!", Toast.LENGTH_SHORT
-                    ).show()
+                    else {
+                        Toast.makeText(
+                            context, "Google Sign-In failed!", Toast.LENGTH_SHORT
+                        ).show()
+                        stateLogin = false
+                    }
                 }
         } catch (e: ApiException) {
-            // Google Sign In failed, handle accordingly
+            stateLogin = false
             Toast.makeText(context, "Google Sign-In failed!", Toast.LENGTH_SHORT).show()
         }
     }
-    LaunchedEffect(Unit) {
-        val user = FirebaseAuth.getInstance().currentUser
-        if (user != null) {
-            onSuccess()
-        }
-    }
-    LoginScreen {
+    val launcher = {
+        stateLogin = true
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(context.getString(R.string.default_web_client_id))
             .requestId()
@@ -68,10 +75,24 @@ fun LoginScreenWithGoogle(onSuccess: () -> Unit) {
 
         googleSignInLauncher.launch(googleSignInClient.signInIntent)
     }
+    LaunchedEffect(Unit) {
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user != null) {
+            onSuccess()
+        }
+        if (firstTime) {
+            firstTime = false
+            launcher()
+        }
+    }
+    LoginScreen(launcher, stateLogin)
 }
 
+var firstTime = true
+
+@Preview
 @Composable
-fun LoginScreen(launch: () -> Unit = {}) {
+private fun LoginScreen(launch: () -> Unit = {}, loading: Boolean = false) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -80,25 +101,29 @@ fun LoginScreen(launch: () -> Unit = {}) {
         verticalArrangement = Arrangement.Center
     ) {
 
-        Text(
-            text = "Login",
-            fontSize = 24.sp,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        Button(
-            onClick = launch,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Text("Login with Google")
+        if (loading) {
+            CircularProgressIndicator(
+                modifier = Modifier.width(64.dp)
+            )
+        } else {
+            Button(
+                onClick = launch,
+                modifier = Modifier
+                    .padding(16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.TwoTone.Person,
+                    contentDescription = "Google",
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text("Login with Google")
+            }
         }
     }
 }
 
 @Preview
 @Composable
-fun PreviewLoginScreen() {
-    LoginScreen()
+private fun LoginScreenLoading() {
+    LoginScreen(loading = true)
 }
