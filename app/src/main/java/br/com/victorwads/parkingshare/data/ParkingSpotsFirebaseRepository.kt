@@ -15,11 +15,14 @@ class ParkingSpotsFirebaseRepository(
 ) : ParkingSpotsRepository {
     private val db by lazy { FirebaseFirestore.getInstance() }
 
-    override fun updateSpot(floor: String, spot: PlaceSpot) {
-        getFloorsRef(floor).document(spot.id).set(spot)
+    override suspend fun updateSpot(floor: String, spot: PlaceSpot): Boolean = suspendCoroutine {
+        getFloorsRef(floor)
+            .document(spot.id).set(spot)
+            .addOnSuccessListener { _ -> it.resumeWith(Result.success(true)) }
+            .addOnFailureListener { _ -> it.resumeWith(Result.success(false)) }
     }
 
-    override fun deleteSpot(floor: String, square: PlaceSpot) {
+    override suspend fun deleteSpot(floor: String, square: PlaceSpot) {
         getFloorsRef(floor).document(square.id).delete()
     }
 
@@ -38,9 +41,7 @@ class ParkingSpotsFirebaseRepository(
                 }.toMap()
                 cont.resumeWith(Result.success(spots))
             }
-            .addOnFailureListener {
-                cont.resumeWith(Result.success(mapOf()))
-            }
+            .addOnFailureListener { cont.resumeWith(Result.success(mapOf())) }
     }
 
     private fun getFloorsRef(floor: String) = db

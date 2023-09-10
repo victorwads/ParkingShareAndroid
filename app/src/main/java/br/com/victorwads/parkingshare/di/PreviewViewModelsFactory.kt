@@ -22,11 +22,12 @@ class PreviewViewModelsFactory : ViewModelProvider.Factory {
 
                         override suspend fun getAllSpots(floor: String): Map<String, PlaceSpot> = spots
 
-                        override fun updateSpot(floor: String, spot: PlaceSpot) {
+                        override suspend fun updateSpot(floor: String, spot: PlaceSpot): Boolean {
                             spots[spot.id] = spot
+                            return true
                         }
 
-                        override fun deleteSpot(floor: String, square: PlaceSpot) {
+                        override suspend fun deleteSpot(floor: String, square: PlaceSpot) {
                             spots.remove(square.id)
                         }
 

@@ -5,4 +5,5 @@
     <string name="add_left">Adicionar a Esquerda</string>
     <string name="add_right">Adicionar a Direita</string>
     <string name="error_spot_exists">A posição %1$s já existe.</string>
+    <string name="error_generic_repository">Erro ao salvar o spot %1$s</string>
 </resources>

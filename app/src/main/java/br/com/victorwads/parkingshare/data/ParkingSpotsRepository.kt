@@ -8,8 +8,8 @@ interface ParkingSpotsRepository {
     val place: Place
     suspend fun getAllSpots(floor: String): Map<String, PlaceSpot>
 
-    fun updateSpot(floor: String, spot: PlaceSpot)
+    suspend fun updateSpot(floor: String, spot: PlaceSpot): Boolean
 
-    fun deleteSpot(floor: String, square: PlaceSpot)
+    suspend fun deleteSpot(floor: String, square: PlaceSpot)
 
 }

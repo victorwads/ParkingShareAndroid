@@ -94,9 +94,12 @@ class ParkingEditViewModel(
     }
 
     fun saveSpotChanges(spot: PlaceSpot, position: PlaceSpot.Position): PlaceSpot.Position {
+        val hollBack = spot.position.copy()
         spot.position = position
         spot.fixPosition(parkingSpots)
-        saveSpotChanges(spot)
+        saveSpotChanges(spot) {
+            spot.position = hollBack
+        }
         return spot.position
     }
 
@@ -120,11 +123,13 @@ class ParkingEditViewModel(
 
     fun deleteSpot(square: PlaceSpot? = selectedSpot.value) {
         square ?: return
-        parkingSpotsRepository.deleteSpot(floor, square)
-        parkingSpots.remove(square.id)
-        selectedSpot.value = parkingSpots.keys
-            .map { it.toIntOrNull() ?: 0 }.sorted()
-            .lastOrNull()?.let { parkingSpots[it.toString()] }
+        viewModelScope.launch {
+            parkingSpotsRepository.deleteSpot(floor, square)
+            parkingSpots.remove(square.id)
+            selectedSpot.value = parkingSpots.keys
+                .map { it.toIntOrNull() ?: 0 }.sorted()
+                .lastOrNull()?.let { parkingSpots[it.toString()] }
+        }
     }
 
     fun updateOffset(offset: Offset) {
@@ -144,7 +149,13 @@ class ParkingEditViewModel(
         )
     }
 
-    private fun saveSpotChanges(spot: PlaceSpot) = Unit//parkingSpotsRepository.updateSpot(tempFloor, spot)
+    private fun saveSpotChanges(spot: PlaceSpot, onError: () -> Unit = {}) = viewModelScope.launch {
+        if (!parkingSpotsRepository.updateSpot(floor, spot)) {
+            errors.value = ParkingViewEditorErrors.RepositoryGenericError(spot)
+            onError()
+        }
+    }
+
 
     private fun animateToSpot(spot: PlaceSpot, zoom: Float = 1f) = animateToTarget(
         targetOffset = Offset(spot.position.x, spot.position.y),

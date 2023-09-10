@@ -54,16 +54,13 @@ fun ParkingEditorScreen(
         viewModel.loadParkingSpots()
         viewModel.errors.observeForever {
             val message = when (it) {
-                ParkingViewEditorErrors.InvalidSpotFloor -> TODO()
-                ParkingViewEditorErrors.InvalidSpotId -> TODO()
-                ParkingViewEditorErrors.InvalidSpotJump -> TODO()
-                ParkingViewEditorErrors.InvalidSpotName -> TODO()
-                ParkingViewEditorErrors.InvalidSpotPrice -> TODO()
-                ParkingViewEditorErrors.InvalidSpotStatus -> TODO()
+                is ParkingViewEditorErrors.RepositoryGenericError ->
+                    context.getString(R.string.error_generic_repository, it.spot.id)
+
                 is ParkingViewEditorErrors.SpotAlreadyExists ->
                     context.getString(R.string.error_spot_exists, it.spot.id)
 
-                null -> null
+                else -> null
             }
             message?.let { msg ->
                 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
