@@ -12,31 +12,34 @@
 
 <body>
     <div class="container">
-        <h1>Exclusão de Dados - ParkingShare</h1>
-        <p>&Uacute;ltima atualiza&ccedil;&atilde;o: 10 de setembro de 2023 as 05:27 (Horario de Brasilia)</p>
-        <p>&nbsp;</p>
-        <h2>Solicita&ccedil;&atilde;o de Remo&ccedil;&atilde;o de Dados</h2>
-        <p>Se voc&ecirc; deseja que todos os seus dados sejam removidos de nossa base de dados, siga as etapas abaixo:
-        </p>
-        <ol>
-            <li>
-                <p><strong>Identifique-se</strong>: Certifique-se de que o e-mail que voc&ecirc; usar&aacute; para a
-                    solicita&ccedil;&atilde;o seja o mesmo utilizado para o cadastro no aplicativo.</p>
-            </li>
-            <li>
-                <p><strong>Envie um e-mail</strong>: Envie um e-mail para <a href="mailto:victor.laureano@gmail.com"
-                        target="_new">victor.laureano@gmail.com</a> com o assunto "Solicita&ccedil;&atilde;o de
-                    Remo&ccedil;&atilde;o de Dados".</p>
-            </li>
-            <li>
-                <p><strong>Conte&uacute;do do E-mail</strong>: No corpo do e-mail, simplesmente escreva "Eu gostaria que
-                    todos os meus dados fossem removidos da base de dados do "Estaciona Fácil - Parking Share".</p>
-            </li>
-        </ol>
-        <p>&nbsp;</p>
-        <p>Depois de recebermos sua solicita&ccedil;&atilde;o, iremos process&aacute;-la o mais r&aacute;pido
-            poss&iacute;vel e confirmaremos a remo&ccedil;&atilde;o dos seus dados por e-mail.</p>
-        <p>&nbsp;</p>
+        <h1>Community Parking Share</h1>
+        <h2>Exclusão de Dados</h1>
+            <p>&Uacute;ltima atualiza&ccedil;&atilde;o: 10 de setembro de 2023 as 05:27 (Horario de Brasilia)</p>
+            <p>&nbsp;</p>
+            <h3>Solicita&ccedil;&atilde;o de Remo&ccedil;&atilde;o de Dados</h3>
+            <p>Se voc&ecirc; deseja que todos os seus dados sejam removidos de nossa base de dados, siga as etapas
+                abaixo:
+            </p>
+            <ol>
+                <li>
+                    <p><strong>Identifique-se</strong>: Certifique-se de que o e-mail que voc&ecirc; usar&aacute; para a
+                        solicita&ccedil;&atilde;o seja o mesmo utilizado para o cadastro no aplicativo.</p>
+                </li>
+                <li>
+                    <p><strong>Envie um e-mail</strong>: Envie um e-mail para <a href="mailto:victor.laureano@gmail.com"
+                            target="_new">victor.laureano@gmail.com</a> com o assunto "Solicita&ccedil;&atilde;o de
+                        Remo&ccedil;&atilde;o de Dados".</p>
+                </li>
+                <li>
+                    <p><strong>Conte&uacute;do do E-mail</strong>: No corpo do e-mail, simplesmente escreva "Eu gostaria
+                        que
+                        todos os meus dados fossem removidos da base de dados do "Estaciona Fácil - Parking Share".</p>
+                </li>
+            </ol>
+            <p>&nbsp;</p>
+            <p>Depois de recebermos sua solicita&ccedil;&atilde;o, iremos process&aacute;-la o mais r&aacute;pido
+                poss&iacute;vel e confirmaremos a remo&ccedil;&atilde;o dos seus dados por e-mail.</p>
+            <p>&nbsp;</p>
     </div>
 </body>
 

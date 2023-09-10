@@ -1,5 +1,5 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: Roboto, Helvetica, Arial, sans-serif;
     background-color: #f4f4f4;
     margin: 0;
     padding: 0;
@@ -14,11 +14,16 @@ body {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-h1,
-h2,
-h3 {
+h3,h4 {
     color: #444;
 }
+
+h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
+
+h2 {
+    color: #ffa100;
+}
+
 
 p {
     line-height: 1.6;
