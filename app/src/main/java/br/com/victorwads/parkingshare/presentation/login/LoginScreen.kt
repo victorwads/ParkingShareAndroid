@@ -1,4 +1,4 @@
-package br.com.victorwads.parkingshare.presentation.screens.login
+package br.com.victorwads.parkingshare.presentation.login
 
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult

@@ -1,4 +1,4 @@
-package br.com.victorwads.parkingshare.presentation.screens.parking
+package br.com.victorwads.parkingshare.presentation.parking.viewModel
 
 import br.com.victorwads.parkingshare.data.models.PlaceSpot
 

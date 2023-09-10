@@ -1,9 +1,10 @@
-package br.com.victorwads.parkingshare
+package br.com.victorwads.parkingshare.data.firebase
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import androidx.core.app.NotificationCompat
+import br.com.victorwads.parkingshare.R
 import br.com.victorwads.parkingshare.data.UserRepository
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage

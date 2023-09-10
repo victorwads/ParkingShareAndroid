@@ -1,6 +1,5 @@
-package br.com.victorwads.parkingshare.presentation.screens.parking
+package br.com.victorwads.parkingshare.presentation.parking.components
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -16,8 +15,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -36,25 +37,31 @@ import br.com.victorwads.parkingshare.data.models.shadowMargin
 import br.com.victorwads.parkingshare.di.PreviewViewModelsFactory
 import br.com.victorwads.parkingshare.di.ViewModelsFactory
 import br.com.victorwads.parkingshare.isDebug
-
-val darkYellow = Color(0xFFDDBB00)
+import br.com.victorwads.parkingshare.presentation.parking.viewModel.ParkingEditViewModel
 
 @Composable
-fun ParkingView(
+fun ParkingGraph(
     viewModel: ParkingEditViewModel = viewModel(factory = ViewModelsFactory()),
-    longPress: Boolean
+    inputMode: SpotInputMode = SpotInputMode.None,
+    maxZoom: Float = 1f, minZoom: Float = 0.1f
 ) {
     val squares = viewModel.parkingSpots
     val selectedSpot by remember { viewModel.selectedSpot }
     var zoomState by remember { viewModel.zoom }
+    var rotationState by remember { viewModel.rotation }
     val offset by remember { viewModel.offset }
     var size by remember { viewModel.size }
     val density = LocalDensity.current.density
 
     Box(
+        contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxSize()
             .clipToBounds()
+            .let {
+                if (inputMode is SpotInputMode.None) it.rotate(rotationState)
+                else it
+            }
             .let {
                 if (isDebug) it.border(1.dp, Color.Red)
                 else it
@@ -67,23 +74,28 @@ fun ParkingView(
             }
             .pointerInput(squares) {
                 detectTransformGestures { _, pan, zoom, rotation ->
-                    Log.i("Gesture", "X: ${pan.x}, Y: ${pan.y}, Zoom: $zoom, Rotation: $rotation")
                     zoomState *= zoom
-                    if (zoomState < 0.1f) zoomState = 0.1f
-                    else if (zoomState > 1f) {
-                        zoomState = 1f
-                        return@detectTransformGestures
-                    }
-                    viewModel.updateOffset((offset * zoom + (pan / density)))
+                    rotationState += rotation
+                    var calcZoom = 1f
+                    if (zoomState < minZoom) zoomState = minZoom
+                    else if (zoomState > maxZoom) zoomState = maxZoom
+                    else calcZoom = zoom
+                    viewModel.updateOffset((offset * calcZoom + (pan / density)))
                 }
             }
     ) {
         if (isDebug)
-            Column {
+            Column(
+                modifier = Modifier.let {
+                    if (inputMode is SpotInputMode.None) it.rotate(-rotationState)
+                    else it
+                }
+            ) {
                 Text(text = "zoom: $zoomState")
                 Text(text = "offset: $offset")
                 Text(text = "boxSize: $size")
                 Text(text = "squareArea: ${squares.area}")
+                Text(text = "rotation: $rotationState")
                 Text("PonX: ${((squares.area.width.value - size.width) / 2f) + (size.width / 2f) - offset.x}")
                 Text("PonY: ${((squares.area.height.value - size.height) / 2f) + (size.height / 2f) - offset.y}")
             }
@@ -99,14 +111,14 @@ fun ParkingView(
                     .offset(x = squares.minX.dp - shadowMargin, y = squares.minY.dp - shadowMargin)
                     .border(1.dp, Color.Gray)
                     .zIndex(0f)
-                    .background(Color(0x11000000))
+                    .background(Color(0x05000000))
             )
             squares.forEach { (id, spot) ->
                 key(id) {
-                    ParkingSpot(
+                    SpotView(
                         spot = spot,
                         selected = id == selectedSpot?.id,
-                        useLongPress = longPress,
+                        inputMode = inputMode,
                         events = ParkingViewEvents(
                             onDragStart = { viewModel.selectSpot(it) },
                             onDragEnd = { it, position ->
@@ -125,7 +137,7 @@ fun ParkingView(
 @Composable
 fun PreviewParkingView() {
     val viewModel: ParkingEditViewModel = viewModel(factory = PreviewViewModelsFactory())
-    ParkingView(viewModel = viewModel, longPress = false)
+    ParkingGraph(viewModel = viewModel)
     LaunchedEffect(Unit) {
         with(viewModel) {
             addParkingSpot()

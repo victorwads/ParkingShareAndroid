@@ -1,7 +1,6 @@
-package br.com.victorwads.parkingshare.presentation.screens.parking
+package br.com.victorwads.parkingshare.presentation.parking
 
 import android.content.res.Configuration
-import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.text.KeyboardActions
@@ -23,44 +22,22 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
-import br.com.victorwads.parkingshare.R
 import br.com.victorwads.parkingshare.di.PreviewViewModelsFactory
 import br.com.victorwads.parkingshare.di.PreviewViewModelsFactory.Companion.createMediumParkingStop
+import br.com.victorwads.parkingshare.presentation.parking.components.ParkingGraph
+import br.com.victorwads.parkingshare.presentation.parking.viewModel.ParkingEditViewModel
 
 @Composable
-fun ParkingViewEditor(
+fun ParkingViewScreen(
     viewModel: ParkingEditViewModel
 ) {
     val context = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
-    var longPress by remember { mutableStateOf(true) }
     Column(modifier = Modifier.fillMaxSize()) {
-        ParkingViewEditorTools(
-            viewModel = viewModel,
-            showDialog = { showDialog = true },
-            changeLongPress = { longPress = it }
-        )
-        ParkingView(viewModel = viewModel, longPress = longPress)
+        ParkingGraph(viewModel = viewModel)
     }
     LaunchedEffect(true) {
         viewModel.loadParkingSpots()
-        viewModel.errors.observeForever {
-            val message = when (it) {
-                ParkingViewEditorErrors.InvalidSpotFloor -> TODO()
-                ParkingViewEditorErrors.InvalidSpotId -> TODO()
-                ParkingViewEditorErrors.InvalidSpotJump -> TODO()
-                ParkingViewEditorErrors.InvalidSpotName -> TODO()
-                ParkingViewEditorErrors.InvalidSpotPrice -> TODO()
-                ParkingViewEditorErrors.InvalidSpotStatus -> TODO()
-                is ParkingViewEditorErrors.SpotAlreadyExists ->
-                    context.getString(R.string.error_spot_exists, it.spot.id)
-
-                null -> null
-            }
-            message?.let { msg ->
-                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-            }
-        }
     }
     if (showDialog) {
         var textInput by remember { mutableStateOf("") }
@@ -106,7 +83,7 @@ fun ParkingViewEditor(
 @Composable
 fun ParkingViewEditorPreview() {
     val viewModel = viewModel<ParkingEditViewModel>(factory = PreviewViewModelsFactory())
-    ParkingViewEditor(viewModel = viewModel)
+    ParkingEditorScreen(viewModel = viewModel)
     LaunchedEffect(Unit) { createMediumParkingStop(viewModel) }
 }
 
@@ -115,6 +92,6 @@ fun ParkingViewEditorPreview() {
 @Composable
 fun ParkingViewEditorPreviewNight() {
     val viewModel = viewModel<ParkingEditViewModel>(factory = PreviewViewModelsFactory())
-    ParkingViewEditor(viewModel = viewModel)
+    ParkingEditorScreen(viewModel = viewModel)
     LaunchedEffect(Unit) { createMediumParkingStop(viewModel) }
 }

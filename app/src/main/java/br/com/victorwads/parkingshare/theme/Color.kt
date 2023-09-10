@@ -1,4 +1,4 @@
-package br.com.victorwads.parkingshare.presentation.theme
+package br.com.victorwads.parkingshare.theme
 
 import androidx.compose.ui.graphics.Color
 

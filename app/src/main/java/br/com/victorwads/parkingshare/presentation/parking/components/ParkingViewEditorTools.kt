@@ -1,4 +1,4 @@
-package br.com.victorwads.parkingshare.presentation.screens.parking
+package br.com.victorwads.parkingshare.presentation.parking.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import br.com.victorwads.parkingshare.data.models.PlaceSpot
 import br.com.victorwads.parkingshare.di.PreviewViewModelsFactory
+import br.com.victorwads.parkingshare.presentation.parking.viewModel.ParkingEditViewModel
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalComposeUiApi::class)
 @Composable

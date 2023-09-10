@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import br.com.victorwads.parkingshare.data.ParkingSpotsRepository
 import br.com.victorwads.parkingshare.data.models.Place
 import br.com.victorwads.parkingshare.data.models.PlaceSpot
-import br.com.victorwads.parkingshare.presentation.screens.parking.ParkingEditViewModel
+import br.com.victorwads.parkingshare.presentation.parking.viewModel.ParkingEditViewModel
 
 class PreviewViewModelsFactory : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -41,14 +41,14 @@ class PreviewViewModelsFactory : ViewModelProvider.Factory {
 
     companion object {
         fun createMediumParkingStop(viewModel: ParkingEditViewModel) = with(viewModel) {
-            addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot();
-            addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot();
-            addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot();
+            addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot()
+            addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot()
+            addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot()
             addParkingSpot(PlaceSpot.Alignment.BOTTOM, 12, from = viewModel.parkingSpots["0"])
-            addParkingSpot(PlaceSpot.Alignment.RIGHT);
-            addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot();
-            addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot();
-            addParkingSpot(); addParkingSpot();
+            addParkingSpot(PlaceSpot.Alignment.RIGHT)
+            addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot()
+            addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot()
+            addParkingSpot(); addParkingSpot()
             unselectSpot()
             zoom.floatValue = 0.5f
             center()

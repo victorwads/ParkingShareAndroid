@@ -5,7 +5,7 @@ package br.com.victorwads.parkingshare.di
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import br.com.victorwads.parkingshare.data.ParkingSpotsFirebaseRepository
-import br.com.victorwads.parkingshare.presentation.screens.parking.ParkingEditViewModel
+import br.com.victorwads.parkingshare.presentation.parking.viewModel.ParkingEditViewModel
 
 class ViewModelsFactory : ViewModelProvider.Factory {
 

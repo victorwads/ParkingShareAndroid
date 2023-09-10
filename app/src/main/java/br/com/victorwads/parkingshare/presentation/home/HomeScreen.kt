@@ -1,11 +1,11 @@
-package br.com.victorwads.parkingshare.presentation.screens.home
+package br.com.victorwads.parkingshare.presentation.home
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
-import br.com.victorwads.parkingshare.presentation.screens.Screens
+import br.com.victorwads.parkingshare.presentation.Screens
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.firebase.auth.FirebaseAuth
 
@@ -17,6 +17,9 @@ fun HomeScreen(
         Button(
             onClick = { navController.navigate(Screens.ParkingEditor.route) }
         ) { Text("Editor") }
+        Button(
+            onClick = { navController.navigate(Screens.ParkingView.route) }
+        ) { Text("View") }
         Button(
             onClick = {
                 FirebaseAuth.getInstance().signOut()

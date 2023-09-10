@@ -1,4 +1,4 @@
-package br.com.victorwads.parkingshare.presentation.components
+package br.com.victorwads.parkingshare.presentation.parking.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -13,10 +13,11 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun TextWithBorder(
+fun SpotNameView(
     modifier: Modifier = Modifier,
     boxColor: Color,
     text: String,
@@ -56,4 +57,14 @@ fun TextWithBorder(
             }
         )
     }
+}
+
+@Preview
+@Composable
+fun SpotNameViewPreview() {
+    SpotNameView(
+        boxColor = Color.DarkGray,
+        text = "A1",
+        size = 30f
+    )
 }

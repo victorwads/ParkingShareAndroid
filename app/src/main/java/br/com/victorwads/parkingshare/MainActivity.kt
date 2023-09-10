@@ -15,11 +15,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import br.com.victorwads.parkingshare.data.UserRepository
 import br.com.victorwads.parkingshare.di.ViewModelsFactory
-import br.com.victorwads.parkingshare.presentation.screens.Screens
-import br.com.victorwads.parkingshare.presentation.screens.home.HomeScreen
-import br.com.victorwads.parkingshare.presentation.screens.login.LoginScreenWithGoogle
-import br.com.victorwads.parkingshare.presentation.screens.parking.ParkingViewEditor
-import br.com.victorwads.parkingshare.presentation.theme.ParkingShareTheme
+import br.com.victorwads.parkingshare.presentation.Screens
+import br.com.victorwads.parkingshare.presentation.home.HomeScreen
+import br.com.victorwads.parkingshare.presentation.login.LoginScreenWithGoogle
+import br.com.victorwads.parkingshare.presentation.parking.ParkingEditorScreen
+import br.com.victorwads.parkingshare.presentation.parking.ParkingViewScreen
+import br.com.victorwads.parkingshare.theme.ParkingShareTheme
 
 class MainActivity : ComponentActivity() {
 
@@ -62,9 +63,13 @@ class MainActivity : ComponentActivity() {
         composable(Screens.Home.route) {
             HomeScreen(navController)
         }
-
         composable(Screens.ParkingEditor.route) {
-            ParkingViewEditor(
+            ParkingEditorScreen(
+                viewModel(factory = ViewModelsFactory())
+            )
+        }
+        composable(Screens.ParkingView.route) {
+            ParkingViewScreen(
                 viewModel(factory = ViewModelsFactory())
             )
         }

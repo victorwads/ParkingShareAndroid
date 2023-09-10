@@ -1,4 +1,4 @@
-package br.com.victorwads.parkingshare.presentation.screens.parking
+package br.com.victorwads.parkingshare.presentation.parking.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -35,13 +35,12 @@ import br.com.victorwads.parkingshare.R
 import br.com.victorwads.parkingshare.data.models.PlaceSpot
 import br.com.victorwads.parkingshare.data.models.PlaceSpot.Position
 import br.com.victorwads.parkingshare.isDebug
-import br.com.victorwads.parkingshare.presentation.components.TextWithBorder
 
 @Composable
-internal fun ParkingSpot(
+internal fun SpotView(
     spot: PlaceSpot,
     selected: Boolean,
-    useLongPress: Boolean = false,
+    inputMode: SpotInputMode = SpotInputMode.None,
     events: ParkingViewEvents = ParkingViewEvents(),
 ) {
     val density: Float = LocalDensity.current.density
@@ -56,8 +55,8 @@ internal fun ParkingSpot(
             .border(2.dp, if (selected) Color.Green else Color.Yellow)
             .zIndex(if (selected) 20f else 10f)
             .background(Color.Transparent)
-            .pointerInput(useLongPress) {
-                if (useLongPress) {
+            .pointerInput(inputMode) {
+                if (inputMode == SpotInputMode.LongPress) {
                     detectDragGesturesAfterLongPress(
                         onDragStart = { events.onDragStart(spot) },
                         onDragEnd = { offset = events.onDragEnd(spot, offset) },
@@ -66,7 +65,7 @@ internal fun ParkingSpot(
                             offset = offset.plus((dragAmount / density))
                         }
                     }
-                } else {
+                } else if (inputMode == SpotInputMode.Touch) {
                     detectDragGestures(
                         onDragStart = { events.onDragStart(spot) },
                         onDragEnd = { offset = events.onDragEnd(spot, offset) }
@@ -82,7 +81,7 @@ internal fun ParkingSpot(
             else Alignment.BottomCenter
         }
     ) {
-        TextWithBorder(
+        SpotNameView(
             modifier = Modifier
                 .offset(
                     x = if (spot.size.width > spot.size.height) (-15).dp else 0.dp,
@@ -100,7 +99,7 @@ internal fun ParkingSpot(
                 modifier = Modifier
                     .fillMaxSize()
             ) {
-                Column() {
+                Column {
                     Text(text = "ox: ${offset.x.toInt()}")
                     Text(text = "oy: ${offset.y.toInt()}")
                     Text(text = "sx: ${spot.position.x.toInt()}")
@@ -116,6 +115,12 @@ internal fun ParkingSpot(
             AddButton(Modifier.offset(y = dpOffset), PlaceSpot.Alignment.BOTTOM, events.onAdd)
         }
     }
+}
+
+sealed class SpotInputMode {
+    object None : SpotInputMode()
+    object LongPress : SpotInputMode()
+    object Touch : SpotInputMode()
 }
 
 @Composable
@@ -160,7 +165,7 @@ fun PreviewParkingSpotSelected() {
         modifier = Modifier.padding(75.dp),
         contentAlignment = Alignment.Center
     ) {
-        ParkingSpot(
+        SpotView(
             spot = PlaceSpot("1"),
             selected = true,
         )
@@ -174,7 +179,7 @@ fun PreviewParkingSpot() {
         modifier = Modifier.padding(75.dp),
         contentAlignment = Alignment.Center
     ) {
-        ParkingSpot(
+        SpotView(
             spot = PlaceSpot("1534"),
             selected = false,
         )
