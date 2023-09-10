@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package br.com.victorwads.parkingshare
 
 import androidx.compose.ui.geometry.Offset
