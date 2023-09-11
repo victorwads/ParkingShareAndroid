@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import br.com.victorwads.parkingshare.data.ParkingSpotsRepository
 import br.com.victorwads.parkingshare.data.models.Place
 import br.com.victorwads.parkingshare.data.models.PlaceSpot
+import br.com.victorwads.parkingshare.presentation.parking.components.ParkingGraphViewController
 import br.com.victorwads.parkingshare.presentation.parking.viewModel.ParkingEditViewModel
 
 class PreviewViewModelsFactory : ViewModelProvider.Factory {
@@ -17,6 +18,8 @@ class PreviewViewModelsFactory : ViewModelProvider.Factory {
                     object : ParkingSpotsRepository {
                         override val place: Place
                             get() = Place()
+
+                        override suspend fun getAllSpots(floor: String, cache: Boolean): Map<String, PlaceSpot> = spots
 
                         private val spots = mutableMapOf<String, PlaceSpot>()
 
@@ -31,8 +34,12 @@ class PreviewViewModelsFactory : ViewModelProvider.Factory {
                             spots.remove(square.id)
                         }
 
+                        override suspend fun findSpot(term: String): Pair<String, PlaceSpot>? = null
+
+                        override suspend fun findSpot(term: String, floor: String): PlaceSpot? = null
+
                     },
-                    turnOffAnimations = true
+                    graphController = ParkingGraphViewController(turnOffAnimations = true)
                 ) as T
             }
 
@@ -45,13 +52,13 @@ class PreviewViewModelsFactory : ViewModelProvider.Factory {
             addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot()
             addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot()
             addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot()
-            addParkingSpot(PlaceSpot.Alignment.BOTTOM, 12, from = parkingSpots["0"])
+            addParkingSpot(PlaceSpot.Alignment.BOTTOM, 12, from = graphController.parkingSpots["0"])
             addParkingSpot(PlaceSpot.Alignment.RIGHT)
             addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot()
             addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot()
             addParkingSpot(); addParkingSpot()
-            unselectSpot()
-            zoom.floatValue = 0.5f
+            graphController.unselectSpot()
+            graphController.zoom.floatValue = 0.5f
             center()
             return this
         }

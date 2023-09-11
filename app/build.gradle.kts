@@ -26,12 +26,14 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file(System.getenv("CPS_KEYSTORE_PATH"))
-            keyAlias = System.getenv("CPS_KEY_ALIAS")
+            System.getenv("CPS_KEYSTORE_PATH")?.let {
+                storeFile = file(it)
+                keyAlias = System.getenv("CPS_KEY_ALIAS")
 
-            val keyPasswordEnv = System.getenv("CPS_KEY_PASSWORD")
-            storePassword = keyPasswordEnv
-            keyPassword = keyPasswordEnv
+                val keyPasswordEnv = System.getenv("CPS_KEY_PASSWORD")
+                storePassword = keyPasswordEnv
+                keyPassword = keyPasswordEnv
+            }
         }
     }
 
@@ -126,8 +128,12 @@ dependencies {
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.08.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
 
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.1")
 }
 
-configure<io.gitlab.arturbosch.detekt.extensions.DetektExtension> {
+detekt {
+    toolVersion = "1.23.1"
+    //config.setFrom(file("config/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
     autoCorrect = true
 }

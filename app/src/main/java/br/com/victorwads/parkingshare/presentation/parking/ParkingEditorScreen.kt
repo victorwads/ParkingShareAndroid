@@ -29,7 +29,7 @@ import br.com.victorwads.parkingshare.presentation.parking.components.ParkingGra
 import br.com.victorwads.parkingshare.presentation.parking.components.ParkingViewEditorTools
 import br.com.victorwads.parkingshare.presentation.parking.components.SpotInputMode
 import br.com.victorwads.parkingshare.presentation.parking.viewModel.ParkingEditViewModel
-import br.com.victorwads.parkingshare.presentation.parking.viewModel.ParkingViewEditorErrors
+import br.com.victorwads.parkingshare.presentation.parking.viewModel.ParkingViewErrors
 
 @Composable
 fun ParkingEditorScreen(
@@ -45,19 +45,19 @@ fun ParkingEditorScreen(
             changeLongPress = { longPress = it }
         )
         ParkingGraph(
-            viewModel = viewModel,
+            controller = viewModel.graphController,
             inputMode = if (longPress) SpotInputMode.LongPress
             else SpotInputMode.Touch
         )
     }
     LaunchedEffect(true) {
-        viewModel.loadParkingSpots()
+        viewModel.init(true)
         viewModel.errors.observeForever {
             val message = when (it) {
-                is ParkingViewEditorErrors.RepositoryGenericError ->
+                is ParkingViewErrors.RepositoryGenericError ->
                     context.getString(R.string.error_generic_repository, it.spot.id)
 
-                is ParkingViewEditorErrors.SpotAlreadyExists ->
+                is ParkingViewErrors.SpotAlreadyExists ->
                     context.getString(R.string.error_spot_exists, it.spot.id)
 
                 else -> null

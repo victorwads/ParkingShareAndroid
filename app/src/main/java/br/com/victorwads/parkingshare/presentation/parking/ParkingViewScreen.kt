@@ -16,8 +16,8 @@ import br.com.victorwads.parkingshare.presentation.parking.viewModel.ParkingEdit
 fun ParkingViewScreen(
     viewModel: ParkingEditViewModel = viewModel(factory = PreviewViewModelsFactory())
 ) {
-    ParkingGraph(viewModel = viewModel)
+    ParkingGraph(controller = viewModel.graphController)
     LaunchedEffect(true) {
-        viewModel.loadParkingSpots()
+        viewModel.init()
     }
 }

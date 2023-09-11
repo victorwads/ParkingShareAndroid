@@ -23,7 +23,7 @@ import br.com.victorwads.parkingshare.di.PreviewViewModelsFactory
 import br.com.victorwads.parkingshare.di.PreviewViewModelsFactory.Companion.createMediumParkingStop
 import br.com.victorwads.parkingshare.presentation.parking.components.ParkingGraph
 import br.com.victorwads.parkingshare.presentation.parking.viewModel.ParkingEditViewModel
-import br.com.victorwads.parkingshare.presentation.parking.viewModel.ParkingViewEditorErrors
+import br.com.victorwads.parkingshare.presentation.parking.viewModel.ParkingViewErrors
 
 @Preview(device = Devices.PIXEL_4, showSystemUi = true)
 @Preview(device = Devices.TABLET, showSystemUi = true)
@@ -35,12 +35,12 @@ fun ParkingSearchScreen(
 ) {
     var showDialog by remember { mutableStateOf(true) }
     var showErrorDialog by remember { mutableStateOf(false) }
-    ParkingGraph(viewModel = viewModel)
+    ParkingGraph(controller = viewModel.graphController)
     LaunchedEffect(true) {
-        viewModel.loadParkingSpots()
+        viewModel.init()
         viewModel.errors.observeForever {
             when (it) {
-                is ParkingViewEditorErrors.SpotNotFound -> showErrorDialog = true
+                is ParkingViewErrors.SpotNotFound -> showErrorDialog = true
                 else -> {}
             }
         }
@@ -83,7 +83,7 @@ fun ParkingSearchScreen(
         )
     }
     val error = viewModel.errors.value
-    if (showErrorDialog && error is ParkingViewEditorErrors.SpotNotFound) {
+    if (showErrorDialog && error is ParkingViewErrors.SpotNotFound) {
         val onDismissRequest = {
             showErrorDialog = false
             navController?.popBackStack()

@@ -77,9 +77,6 @@ fun ParkingViewEditorTools(
         Button(onClick = { viewModel.addParkingSpot() }) {
             Text("Add")
         }
-        Button(onClick = { viewModel.loadParkingSpots() }) {
-            Text("Reload")
-        }
         Button(onClick = { showDialog() }) {
             Text("Find")
         }
@@ -112,16 +109,16 @@ fun ParkingViewEditorTools(
                 }
             }
         }
-        if (viewModel.selectedSpot.value != null) {
+        if (viewModel.graphController.selectedSpot.value != null) {
             Spacer(modifier = Modifier.weight(1f))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Button(onClick = { viewModel.rotateSpot() }) {
+                Button(onClick = { viewModel.rotateSelectedSpot() }) {
                     Text("Rotate")
                 }
                 Button(onClick = { viewModel.deleteSpot() }) {
                     Text("Delete")
                 }
-                Button(onClick = { viewModel.unselectSpot() }) {
+                Button(onClick = { viewModel.graphController.unselectSpot() }) {
                     Text("Unselect")
                 }
             }

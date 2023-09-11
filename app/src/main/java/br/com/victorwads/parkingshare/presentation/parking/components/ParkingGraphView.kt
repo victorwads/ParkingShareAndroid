@@ -35,22 +35,23 @@ import br.com.victorwads.parkingshare.data.models.minX
 import br.com.victorwads.parkingshare.data.models.minY
 import br.com.victorwads.parkingshare.data.models.shadowMargin
 import br.com.victorwads.parkingshare.di.PreviewViewModelsFactory
-import br.com.victorwads.parkingshare.di.ViewModelsFactory
 import br.com.victorwads.parkingshare.isDebug
 import br.com.victorwads.parkingshare.presentation.parking.viewModel.ParkingEditViewModel
 
 @Composable
 fun ParkingGraph(
-    viewModel: ParkingEditViewModel = viewModel(factory = ViewModelsFactory()),
+    controller: ParkingGraphViewController = ParkingGraphViewController(),
     inputMode: SpotInputMode = SpotInputMode.None,
-    maxZoom: Float = 1f, minZoom: Float = 0.1f
+    maxZoom: Float = 1f, minZoom: Float = 0.1f,
+    onAddSpot: (PlaceSpot.Alignment, PlaceSpot?) -> Unit = { _, _ -> },
+    onItemChanged: (PlaceSpot, PlaceSpot.Position) -> PlaceSpot.Position = { _, p -> p }
 ) {
-    val squares = viewModel.parkingSpots
-    val selectedSpot by remember { viewModel.selectedSpot }
-    var zoomState by remember { viewModel.zoom }
-    var rotationState by remember { viewModel.rotation }
-    val offset by remember { viewModel.offset }
-    var size by remember { viewModel.size }
+    val squares = controller.parkingSpots
+    val selectedSpot by remember { controller.selectedSpot }
+    var zoomState by remember { controller.zoom }
+    var rotationState by remember { controller.rotation }
+    val offset by remember { controller.offset }
+    var size by remember { controller.size }
     val density = LocalDensity.current.density
 
     Box(
@@ -80,7 +81,7 @@ fun ParkingGraph(
                     if (zoomState < minZoom) zoomState = minZoom
                     else if (zoomState > maxZoom) zoomState = maxZoom
                     else calcZoom = zoom
-                    viewModel.updateOffset((offset * calcZoom + (pan / density)))
+                    (offset * calcZoom + (pan / density))
                 }
             }
     ) {
@@ -120,11 +121,13 @@ fun ParkingGraph(
                         selected = id == selectedSpot?.id,
                         inputMode = inputMode,
                         events = ParkingViewEvents(
-                            onDragStart = { viewModel.selectSpot(it) },
+                            onDragStart = { controller.selectSpot(it) },
                             onDragEnd = { it, position ->
-                                viewModel.saveSpotChanges(it, position)
+                                onItemChanged(it, position)
                             },
-                            onAdd = { viewModel.addParkingSpot(align = it, from = spot) }
+                            onAdd = {
+                                onAddSpot(it, spot)
+                            }
                         )
                     )
                 }
@@ -137,16 +140,19 @@ fun ParkingGraph(
 @Composable
 fun PreviewParkingView() {
     val viewModel: ParkingEditViewModel = viewModel(factory = PreviewViewModelsFactory())
-    ParkingGraph(viewModel = viewModel)
+    ParkingGraph(controller = viewModel.graphController)
     LaunchedEffect(Unit) {
         with(viewModel) {
             addParkingSpot()
             addParkingSpot(PlaceSpot.Alignment.BOTTOM)
-            addParkingSpot(PlaceSpot.Alignment.RIGHT, 2, parkingSpots["0"])
+            addParkingSpot(
+                PlaceSpot.Alignment.RIGHT, 2,
+                from = viewModel.graphController.parkingSpots["0"]
+            )
             addParkingSpot(PlaceSpot.Alignment.BOTTOM)
-            unselectSpot()
-            zoom.value = 0.5f
-            center()
+            viewModel.graphController.unselectSpot()
+            viewModel.graphController.zoom.floatValue = 0.5f
+            viewModel.graphController.animateToCenter(null)
         }
     }
 }

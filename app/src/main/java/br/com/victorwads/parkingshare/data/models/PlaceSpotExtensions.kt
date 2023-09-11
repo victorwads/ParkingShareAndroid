@@ -28,7 +28,7 @@ val Map<String, PlaceSpot>.area
         (maxYPoint - minY).dp + (shadowMargin * 2)
     )
 
-val Map<String, PlaceSpot>.lastId
+val Map<String, PlaceSpot>.lastSpot
     get() = this.maxOfOrNull { it.value.id }.let { this[it] ?: PlaceSpot() }
 
 fun PlaceSpot.fixPosition(spots: Map<String, PlaceSpot>): PlaceSpot {
