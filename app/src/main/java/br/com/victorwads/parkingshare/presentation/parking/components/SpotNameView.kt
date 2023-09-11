@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
+@Suppress("MagicNumber")
 @Composable
 fun SpotNameView(
     modifier: Modifier = Modifier,

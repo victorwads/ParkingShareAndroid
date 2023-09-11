@@ -42,7 +42,6 @@ class MainActivity : ComponentActivity() {
                         loginGraph(navController)
                         mvp(navController)
                     }
-
                 }
             }
         }
@@ -74,5 +73,4 @@ class MainActivity : ComponentActivity() {
             ParkingSearchScreen(navController, viewModel(factory = factory))
         }
     }
-
 }

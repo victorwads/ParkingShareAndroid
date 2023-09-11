@@ -7,7 +7,6 @@ buildscript {
         classpath("com.google.firebase:firebase-crashlytics-gradle:2.9.9")
         classpath("com.google.firebase:perf-plugin:1.4.2")
         classpath("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:$detektVersion")
-        classpath("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
     }
 }
 // Top-level build file where you can add configuration options common to all sub-projects/modules.

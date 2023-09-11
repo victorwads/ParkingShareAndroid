@@ -133,7 +133,7 @@ dependencies {
 
 detekt {
     toolVersion = "1.23.1"
-    //config.setFrom(file("config/detekt/detekt.yml"))
     buildUponDefaultConfig = true
     autoCorrect = true
+    config.setFrom(file("config/detekt.yml"))
 }

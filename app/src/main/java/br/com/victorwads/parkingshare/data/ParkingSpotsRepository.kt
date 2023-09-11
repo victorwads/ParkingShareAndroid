@@ -17,5 +17,4 @@ interface ParkingSpotsRepository {
     suspend fun findSpot(term: String): Pair<String, PlaceSpot>?
 
     suspend fun findSpot(term: String, floor: String): PlaceSpot?
-
 }

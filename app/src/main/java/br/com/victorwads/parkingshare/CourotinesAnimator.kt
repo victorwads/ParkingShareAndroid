@@ -7,6 +7,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@Suppress("MagicNumber")
 fun <T> CoroutineScope.animateToTarget(
     from: T,
     target: T,

@@ -7,7 +7,5 @@ class CondominiumRepository {
 
     init {
         val db = Firebase.firestore
-
-
     }
 }

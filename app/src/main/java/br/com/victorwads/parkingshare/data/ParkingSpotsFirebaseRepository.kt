@@ -83,5 +83,4 @@ class ParkingSpotsFirebaseRepository(
         }
         return null
     }
-
 }
