@@ -90,11 +90,17 @@ data class PlaceSpot(
             val deltaY = fromSpot.centerY - centerY
 
             return if (abs(deltaX) > abs(deltaY)) {
-                if (centerX > fromSpot.centerX) Alignment.RIGHT
-                else Alignment.LEFT
+                if (centerX > fromSpot.centerX) {
+                    Alignment.RIGHT
+                } else {
+                    Alignment.LEFT
+                }
             } else {
-                if (centerY > fromSpot.centerY) Alignment.BOTTOM
-                else Alignment.TOP
+                if (centerY > fromSpot.centerY) {
+                    Alignment.BOTTOM
+                } else {
+                    Alignment.TOP
+                }
             }
         }
         return null

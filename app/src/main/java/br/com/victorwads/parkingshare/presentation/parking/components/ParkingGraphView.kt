@@ -42,7 +42,8 @@ import br.com.victorwads.parkingshare.presentation.parking.viewModel.ParkingEdit
 fun ParkingGraph(
     controller: ParkingGraphViewController = ParkingGraphViewController(),
     inputMode: SpotInputMode = SpotInputMode.None,
-    maxZoom: Float = 1f, minZoom: Float = 0.1f,
+    maxZoom: Float = 1f,
+    minZoom: Float = 0.1f,
     onAddSpot: (PlaceSpot.Alignment, PlaceSpot?) -> Unit = { _, _ -> },
     onItemChanged: (PlaceSpot, PlaceSpot.Position) -> PlaceSpot.Position = { _, p -> p }
 ) {
@@ -60,12 +61,18 @@ fun ParkingGraph(
             .fillMaxSize()
             .clipToBounds()
             .let {
-                if (inputMode is SpotInputMode.None) it.rotate(rotationState)
-                else it
+                if (inputMode is SpotInputMode.None) {
+                    it.rotate(rotationState)
+                } else {
+                    it
+                }
             }
             .let {
-                if (isDebug) it.border(1.dp, Color.Red)
-                else it
+                if (isDebug) {
+                    it.border(1.dp, Color.Red)
+                } else {
+                    it
+                }
             }
             .onSizeChanged {
                 size = IntSize(
@@ -78,18 +85,25 @@ fun ParkingGraph(
                     zoomState *= zoom
                     rotationState += rotation
                     var calcZoom = 1f
-                    if (zoomState < minZoom) zoomState = minZoom
-                    else if (zoomState > maxZoom) zoomState = maxZoom
-                    else calcZoom = zoom
+                    if (zoomState < minZoom) {
+                        zoomState = minZoom
+                    } else if (zoomState > maxZoom) {
+                        zoomState = maxZoom
+                    } else {
+                        calcZoom = zoom
+                    }
                     (offset * calcZoom + (pan / density))
                 }
             }
     ) {
-        if (isDebug)
+        if (isDebug) {
             Column(
                 modifier = Modifier.let {
-                    if (inputMode is SpotInputMode.None) it.rotate(-rotationState)
-                    else it
+                    if (inputMode is SpotInputMode.None) {
+                        it.rotate(-rotationState)
+                    } else {
+                        it
+                    }
                 }
             ) {
                 Text(text = "zoom: $zoomState")
@@ -100,6 +114,7 @@ fun ParkingGraph(
                 Text("PonX: ${((squares.area.width.value - size.width) / 2f) + (size.width / 2f) - offset.x}")
                 Text("PonY: ${((squares.area.height.value - size.height) / 2f) + (size.height / 2f) - offset.y}")
             }
+        }
         Box(
             modifier = Modifier
                 .requiredSize(squares.area)
@@ -146,7 +161,8 @@ fun PreviewParkingView() {
             addParkingSpot()
             addParkingSpot(PlaceSpot.Alignment.BOTTOM)
             addParkingSpot(
-                PlaceSpot.Alignment.RIGHT, 2,
+                PlaceSpot.Alignment.RIGHT,
+                2,
                 from = viewModel.graphController.parkingSpots["0"]
             )
             addParkingSpot(PlaceSpot.Alignment.BOTTOM)

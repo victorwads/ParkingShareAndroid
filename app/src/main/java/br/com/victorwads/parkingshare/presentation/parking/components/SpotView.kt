@@ -77,8 +77,11 @@ internal fun SpotView(
                 }
             },
         contentAlignment = spot.size.let {
-            if (it.width > it.height) Alignment.CenterEnd
-            else Alignment.BottomCenter
+            if (it.width > it.height) {
+                Alignment.CenterEnd
+            } else {
+                Alignment.BottomCenter
+            }
         }
     ) {
         SpotNameView(
@@ -93,8 +96,11 @@ internal fun SpotView(
         if (isDebug) {
             Box(
                 contentAlignment = spot.size.let {
-                    if (it.width > it.height) Alignment.CenterStart
-                    else Alignment.TopCenter
+                    if (it.width > it.height) {
+                        Alignment.CenterStart
+                    } else {
+                        Alignment.TopCenter
+                    }
                 },
                 modifier = Modifier
                     .fillMaxSize()
@@ -149,7 +155,6 @@ private fun AddButton(
             Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(description))
         }
     }
-
 }
 
 class ParkingViewEvents(
@@ -185,4 +190,3 @@ fun PreviewParkingSpot() {
         )
     }
 }
-

@@ -17,7 +17,6 @@ class ParkingEditViewModel(
     private val floor: String = "T",
 ) : ViewModel() {
 
-
     // Editor
     val newItemsAlignment = mutableStateOf(PlaceSpot.Alignment.RIGHT)
     val newItemsJump = mutableIntStateOf(1)
@@ -44,8 +43,11 @@ class ParkingEditViewModel(
         viewModelScope.launch {
             parkingSpotsRepository.findSpot(floor, term).let {
                 if (it == null) {
-                    if (add) addParkingSpot(term)
-                    else errors.value = ParkingViewErrors.SpotNotFound(term)
+                    if (add) {
+                        addParkingSpot(term)
+                    } else {
+                        errors.value = ParkingViewErrors.SpotNotFound(term)
+                    }
                 } else {
                     graphController.animateToSpot(viewModelScope, it)
                 }

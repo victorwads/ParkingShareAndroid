@@ -64,7 +64,8 @@ fun ParkingViewEditorTools(
             textStyle = TextStyle(textAlign = TextAlign.Center),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Done, autoCorrect = false
+                imeAction = ImeAction.Done,
+                autoCorrect = false
             ),
             keyboardActions = KeyboardActions(
                 onDone = {
@@ -85,7 +86,10 @@ fun ParkingViewEditorTools(
         }
         Spacer(modifier = Modifier.weight(1f))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Switch(checked = longPress, onCheckedChange = { longPress = it; changeLongPress(it) })
+            Switch(checked = longPress, onCheckedChange = {
+                longPress = it
+                changeLongPress(it)
+            })
             Text("LongPress", modifier = Modifier.padding(start = 8.dp, end = 8.dp))
 
             var expanded by remember { mutableStateOf(false) }

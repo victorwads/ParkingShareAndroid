@@ -16,7 +16,8 @@ data class PlaceSpotRequest(
     @JvmField @PropertyName("neededTime")
     var neededTime: NeededTime = NeededTime(),
     @ServerTimestamp
-    @JvmField @PropertyName("publishTime")
+    @JvmField
+    @PropertyName("publishTime")
     var publishTime: Timestamp = Timestamp(Date(0)),
 ) {
     data class NeededTime(

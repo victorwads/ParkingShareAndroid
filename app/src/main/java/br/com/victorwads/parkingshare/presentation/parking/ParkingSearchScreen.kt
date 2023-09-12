@@ -58,7 +58,8 @@ fun ParkingSearchScreen(
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Search, autoCorrect = false
+                            imeAction = ImeAction.Search,
+                            autoCorrect = false
                         ),
                         keyboardActions = KeyboardActions(
                             onSearch = {
@@ -71,7 +72,10 @@ fun ParkingSearchScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showDialog = false; viewModel.findSpot(textInput); }) {
+                TextButton(onClick = {
+                    showDialog = false
+                    viewModel.findSpot(textInput)
+                }) {
                     Text("Confirmar")
                 }
             },
@@ -95,11 +99,14 @@ fun ParkingSearchScreen(
             text = {
                 Text(
                     "Não encontramos a vaga com o nome ${error.id}.\n" +
-                            "Gostaria de procurar novamente?"
+                        "Gostaria de procurar novamente?"
                 )
             },
             confirmButton = {
-                TextButton(onClick = { showErrorDialog = false; showDialog = true }) {
+                TextButton(onClick = {
+                    showErrorDialog = false
+                    showDialog = true
+                }) {
                     Text("Confirmar")
                 }
             },

@@ -37,7 +37,6 @@ class PreviewViewModelsFactory : ViewModelProvider.Factory {
                         override suspend fun findSpot(term: String): Pair<String, PlaceSpot>? = null
 
                         override suspend fun findSpot(term: String, floor: String): PlaceSpot? = null
-
                     },
                     graphController = ParkingGraphViewController(turnOffAnimations = true)
                 ) as T
@@ -49,14 +48,30 @@ class PreviewViewModelsFactory : ViewModelProvider.Factory {
 
     companion object {
         fun ParkingEditViewModel.createMediumParkingStop(): ParkingEditViewModel {
-            addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot()
-            addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot()
-            addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot()
+            addParkingSpot()
+            addParkingSpot()
+            addParkingSpot()
+            addParkingSpot()
+            addParkingSpot()
+            addParkingSpot()
+            addParkingSpot()
+            addParkingSpot()
+            addParkingSpot()
+            addParkingSpot()
+            addParkingSpot()
+            addParkingSpot()
             addParkingSpot(PlaceSpot.Alignment.BOTTOM, 12, from = graphController.parkingSpots["0"])
             addParkingSpot(PlaceSpot.Alignment.RIGHT)
-            addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot()
-            addParkingSpot(); addParkingSpot(); addParkingSpot(); addParkingSpot()
-            addParkingSpot(); addParkingSpot()
+            addParkingSpot()
+            addParkingSpot()
+            addParkingSpot()
+            addParkingSpot()
+            addParkingSpot()
+            addParkingSpot()
+            addParkingSpot()
+            addParkingSpot()
+            addParkingSpot()
+            addParkingSpot()
             graphController.unselectSpot()
             graphController.zoom.floatValue = 0.5f
             center()

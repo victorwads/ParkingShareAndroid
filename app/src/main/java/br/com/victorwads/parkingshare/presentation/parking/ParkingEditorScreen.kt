@@ -46,8 +46,11 @@ fun ParkingEditorScreen(
         )
         ParkingGraph(
             controller = viewModel.graphController,
-            inputMode = if (longPress) SpotInputMode.LongPress
-            else SpotInputMode.Touch
+            inputMode = if (longPress) {
+                SpotInputMode.LongPress
+            } else {
+                SpotInputMode.Touch
+            }
         )
     }
     LaunchedEffect(true) {
@@ -80,7 +83,8 @@ fun ParkingEditorScreen(
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Search, autoCorrect = false
+                            imeAction = ImeAction.Search,
+                            autoCorrect = false
                         ),
                         keyboardActions = KeyboardActions(
                             onSearch = {
@@ -93,7 +97,10 @@ fun ParkingEditorScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showDialog = false; viewModel.findSpot(textInput); }) {
+                TextButton(onClick = {
+                    showDialog = false
+                    viewModel.findSpot(textInput)
+                }) {
                     Text("Confirmar")
                 }
             },

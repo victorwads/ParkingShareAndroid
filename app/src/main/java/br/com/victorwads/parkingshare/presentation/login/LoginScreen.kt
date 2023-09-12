@@ -50,10 +50,13 @@ fun LoginScreenWithGoogle(onSuccess: () -> Unit) {
                 .getInstance()
                 .signInWithCredential(credential)
                 .addOnCompleteListener {
-                    if (it.isSuccessful) onSuccess()
-                    else {
+                    if (it.isSuccessful) {
+                        onSuccess()
+                    } else {
                         Toast.makeText(
-                            context, "Google Sign-In failed!", Toast.LENGTH_SHORT
+                            context,
+                            "Google Sign-In failed!",
+                            Toast.LENGTH_SHORT
                         ).show()
                         stateLogin = false
                     }
@@ -100,7 +103,6 @@ private fun LoginScreen(launch: () -> Unit = {}, loading: Boolean = false) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-
         if (loading) {
             CircularProgressIndicator(
                 modifier = Modifier.width(64.dp)

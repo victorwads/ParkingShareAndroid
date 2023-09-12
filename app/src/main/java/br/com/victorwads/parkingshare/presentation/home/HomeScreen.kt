@@ -63,7 +63,8 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                "Acessível a Adminstradores:", fontWeight = FontWeight.Bold,
+                "Acessível a Adminstradores:",
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)
             )
             ElevatedButton(modifier = Modifier.padding(8.dp), onClick = {
@@ -71,7 +72,8 @@ fun HomeScreen(
             }) { Text("Editar Layout de Vagas") }
 
             Text(
-                "Acessivel a Qualquer Publico:", fontWeight = FontWeight.Bold,
+                "Acessivel a Qualquer Publico:",
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)
             )
             ElevatedButton(modifier = Modifier.padding(8.dp), onClick = {
@@ -84,7 +86,8 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                "Conteúdo Relacionado ao Usuário:", fontWeight = FontWeight.Bold,
+                "Conteúdo Relacionado ao Usuário:",
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)
             )
             FilledTonalButton(onClick = {}, enabled = false) { Text("Minhas Vagas") }
@@ -118,6 +121,5 @@ fun HomeScreen(
                 }
             }) { Text("Deslogar") }
         }
-
     }
 }

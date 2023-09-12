@@ -16,6 +16,7 @@ data class PlaceSpotShare(
     @JvmField @PropertyName("endDate")
     var endDate: Timestamp = Timestamp(Date(0)),
     @ServerTimestamp
-    @JvmField @PropertyName("publishTime")
+    @JvmField
+    @PropertyName("publishTime")
     var publishTime: Timestamp = Timestamp(Date(0)),
 )

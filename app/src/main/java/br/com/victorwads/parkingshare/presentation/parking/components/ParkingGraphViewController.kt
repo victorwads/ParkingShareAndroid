@@ -48,7 +48,9 @@ class ParkingGraphViewController(
     }
 
     fun animateToSpot(
-        coroutineScope: CoroutineScope?, spot: PlaceSpot, zoom: Float = this.zoom.floatValue
+        coroutineScope: CoroutineScope?,
+        spot: PlaceSpot,
+        zoom: Float = this.zoom.floatValue
     ) = animateToTarget(
         coroutineScope,
         targetOffset = Offset(spot.position.x, spot.position.y),
@@ -99,5 +101,4 @@ class ParkingGraphViewController(
         selectedSpot.value = referenceSpot
         return spot
     }
-
 }
