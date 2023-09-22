@@ -61,7 +61,8 @@ class MainActivity : ComponentActivity() {
     private fun NavGraphBuilder.mvp(navController: NavController) {
         val factory = ViewModelsFactory()
         composable(Screens.Home.route) {
-            HomeScreen(navController)
+            val name = UserRepository.shared.user?.displayName ?: "Usuário"
+            HomeScreen(navController, userName = name)
         }
         composable(Screens.ParkingEditor.route) {
             ParkingEditorScreen(viewModel(factory = factory))

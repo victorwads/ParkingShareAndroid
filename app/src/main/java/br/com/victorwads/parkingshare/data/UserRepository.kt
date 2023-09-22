@@ -6,6 +6,7 @@ import br.com.victorwads.parkingshare.data.firebase.Collections
 import br.com.victorwads.parkingshare.data.models.UserData
 import br.com.victorwads.parkingshare.data.models.UserData.Fields
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
@@ -13,6 +14,9 @@ import com.google.firebase.messaging.FirebaseMessaging
 class UserRepository {
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseFirestore.getInstance()
+
+    val user: FirebaseUser?
+        get() = auth.currentUser
 
     init {
         FirebaseMessaging.getInstance().token.addOnCompleteListener {
